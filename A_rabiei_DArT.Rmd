@@ -1,0 +1,463 @@
+---
+title: "Analysis of <i>Ascochyta rabiei</i> Population and Pathogenicity using DArT-Sequencing"
+author: "Ido Bar"
+date: "25 September 2019"
+always_allow_html: yes
+output: 
+    # md_document:
+#      css: "style/style.css"
+      # toc: true
+      # toc_depth: 3
+#      highlight: pygments
+#      number_sections: false
+    html_document:
+      css: "style/style.css"
+      toc: true
+      toc_float: true
+      toc_depth: 3
+      highlight: pygments
+      number_sections: false
+      code_folding: hide
+#      keep_md: true
+ bibliography: style/Fungal_genomes.bib
+csl: style/springer-basic-improved-author-date-with-italic-et-al-period.csl
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(list(echo = TRUE, eval=FALSE, message=FALSE))
+# load custom functions from github
+devtools::source_gist("7f63547158ecdbacf31b54a58af0d1cc", filename = "util.R")
+# options(width = 180)
+cran_packages <- c("tidyverse", "knitr", "pander","kableExtra", "captioner", "DT", "htmltab",
+                   "paletteer", "dartR", "poppr")
+pacman::p_load(char=cran_packages, repos="https://cran.rstudio.com/")
+# Connect to Zotero to access references
+# biblio <- ReadBib("data/Fungal_genomes.bib") # , "bibtex", "RefManageR"
+# Font Format
+custom_font="consolas"
+fontFmt = function(x,font="consolas"){
+  #outputFormat = knitr::opts_knit$get("rmarkdown.pandoc.to")
+  #if (outputFormat == 'html')
+  formatted_text <- sprintf("<font face='%s'>%s</font>",font,x)
+  return(formatted_text)
+  #else
+  #  x
+}
+```
+
+
+
+```{r captions, include=FALSE, eval=TRUE}
+figs <- captioner(prefix="Figure")
+figs(name="GC_cont", "GC content per sample in WGS reads.")
+figs(name="kmer_plots", "K-mer distribution in 4 selected isolates and the predicted genome size and ploidy.")
+tbls <- captioner(prefix="Table")
+tbls(name="samples","Botrytis isolates used for DNA sequencing.")
+tbls(name="mapping_rates", "Mapping rates of the WGS reads to the <i>Botrytis cinerea</i> B05.10 reference genome.")
+tbls(name="mapping_sum", "Mapping statistics.")
+
+```
+
+# Experimental Design
+DNA was extracted from 279 isolates of Australian _Ascochyta rabiei_ and 2 Spanish _A. rabiei_ isolates and sent for DArT-Sequencing at Diversity Array Technologies (DArT, Canberra) on a single flowcell an Illumina NovaSeq, producing 150 bp short paired-end reads (run name CAGRF20074).  
+Details of the sequenced isolates is provided in (`r tbls(name="samples",display="cite")`).
+
+```{r samples_table, eval=TRUE} 
+# datatable(as.data.frame(samples_table), caption=tbls("samples")) 
+kable(isolate_table) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+                full_width = F, position = "left") %>% 
+  column_spec(3, italic=TRUE) %>% 
+  column_spec(1, bold = T)
+```
+
+# Aims
+* Identify patterns unique to _A. rabiei_ isolates collected within growing region (State), Year, Host cultivar
+* Find association between genomic variants/haplotypes and pathogenicity level (Pathotype)
+* Assess 
+
+# Analysis Pipeline
+## General overview:
+1. Read in Data (after cross-validation of input files)
+2. Data filtration:
+    a. Filter by repeatability (`gl.filter.repavg()` in dartR) (a meassurement of quality per loci)
+    b. Filter by monomorphic loci (`gl.filter.monomorphs()`)(as they do not provide information for population structure and simply slow the analysis)
+    c. Filter by amount of missing data (`gl.filter.callrate(method="loc")`) per locus
+    d. Filter to remove all but one of multiple snps in the same fragment (`gl.filter.secondaries()`)
+    e. Filter individuals by amount of missing data (`gl.filter.callrate(method="ind")`)
+3. 
+
+## Methods
+DNA-Seq data processing, mapping and variant calling were performed on the _Griffith University Gowonda HPC Cluster_ (using Torque PBS scheduler), following the methods specified by @hagiwara_whole-genome_2014 (see details in Appendix 2), @haas_approaches_2011, @hittalmani_novo_2016 and @verma_draft_2016.  
+Detailed methods, including code for running each of the analyses steps are provided in the associated [Botrytis_cinerea_probe_alignment GitHub repository](https://github.com/IdoBar/Botrytis_cinerea_probe_alignment).
+
+### Data pre-processing
+Install needed software in a `conda` environment on Gowonda2.
+```{bash setup_tools}
+# install sambamba (need to fix internet connection to gowonda2 - use patched netcheck in ~/bin)
+~/bin/netcheck
+conda install -c bioconda sambamba htslib samtools bcftools snpsift snpeff multiqc fastqc dnapi igvtools qualimap bbmap gatk picard bowtie2 samblaster freebayes jellyfish bbmap
+conda install -c biobuilds igv
+# Clean extra space
+conda clean -y --all
+# Install pdfx to parse the report and download the files, see https://stackoverflow.com/a/33173484
+easy_install -U pdfx
+```
+
+#### Adaptor Trimming
+Adaptors needed to be removed, as well as very low quality bases/reads, so trimming was performed with BBduk (from BBMap v38.34). See official download page on [SourceForge](https://sourceforge.net/projects/bbmap/), [user guide](http://jgi.doe.gov/data-and-tools/bbtools/bb-tools-user-guide/bbduk-guide/) and [SEQanswers thread](http://seqanswers.com/forums/showthread.php?t=42776).  
+
+### Mapping to the reference genome (using Bowtie2)
+The trimmed reads were mapped to the _A. rabiei_ reference genome, strain Me14 [@verma_draft_2016] using Bowtie2 (version 2.3.5) with the `--very-sensitive` option in `--end-to-end` (global) mode. The resulting SAM files were processed to mark duplicates with SAMBLASTER v0.1.24 [@faust_samblaster:_2014] and converted into coordinate-sorted, indexed BAM files with read groups using [Picard v2.18.22](https://broadinstitute.github.io/picard/).     
+Raw files quality after adaptor trimming was assessed with `r fontFmt("FastQC")` (v0.11.8). Post-trimming and mapping statistics were consolidated into a single, interactive report for each batch using `r fontFmt("MultiQC")` v1.0 [@ewels_multiqc:_2016]
+
+
+#### AGRF batch
+Download all the raw `.fastq.gz` files from AGRF.
+```{bash retrieve_files}
+mkdir -p ~/data/Marzia/B_cinerea_WGS
+# Retrieve all files from AGRF
+rsync -avh -e ssh IdoBar1@agrf-data.agrf.org.au:files/AGRF_CAGRF20074_HFLHKDRXX  ~/data/Marzia/B_cinerea_WGS/
+# verify that ll files were downloaded 
+cd ~/data/Marzia/B_cinerea_WGS/AGRF_CAGRF20074_HFLHKDRXX
+md5sum -c checksums.md5
+```
+
+```{bash recal_trim_reads_AGRF}
+# Prepare the BBduk commands
+DATE=`date +%d_%m_%Y`
+BATCH=AGRF
+RUN="${BATCH}_BT2_process_${DATE}" # day of run was 02_02_2019
+mkdir ${RUN}
+cd !$
+GENOME="$HOME/scratch/data/reference_genomes/Fungal_genomes/B.cinerea/GCA_000143535.4_ASM14353v4"
+READ_LENGTH=150
+NCORES=12
+# PLOIDY=1
+# LANES=$( ls -1 ../*.fastq.gz | egrep -o "_L[0-9]+?_" | sort | uniq | wc -l )
+RGPL=NovaSeq 
+RGPU=HFLHKDRXX
+RGCN=AGRF
+
+# Rename the read files from each lane (and remove barcode and flowcell information)
+ln -s ../*.fastq.gz ./
+my_rename -v "s/_${RGPU}_[ACGT-]*_L002//" *.fastq.gz
+
+# Prepare PBS script
+echo '#!/bin/bash -v
+#PBS -V
+#PBS -l' "select=1:ncpus=$NCORES:mem=48GB,walltime=1:30:00
+
+cd \$PBS_O_WORKDIR
+gawk -v ARRAY_IND=\$PBS_ARRAY_INDEX 'NR==ARRAY_IND' \${CMDS_FILE} | bash" > ${RUN}.pbspro
+
+# Build bowtie2 index
+BT2_IDX_ID=$( echo "cd $( pwd ) ; bowtie2-build ${GENOME}_genomic.fna ${GENOME}" | qsub -V -l select=1:ncpus=12:mem=4GB,walltime=1:00:00  -N bt2-build ) # 5248661.pbsserver
+BT2_IDX_ID=$( echo $BT2_IDX_ID | egrep -o "[0-9]{7}" )
+
+# Perform adapter trimming, mapping, deduplication, add RG, sort and index 
+find ./ -maxdepth 1 -name "*_R1.fastq.gz" | sort | gawk -F"\t" -v bbmap_dir=$BBMAP_DIR -v genome=$GENOME -v RGPL=$RGPL -v RGPU=$RGPU -v RGCN=$RGCN -v ncores=$NCORES 'BEGIN{command=sprintf("bbduk.sh -Xmx1g ref=%s/resources/adapters.fa ktrim=r k=23 mink=11 hdist=1 qtrim=rl trimq=10 tpe tbo int minlen=30 ziplevel=9 ow", bbmap_dir)};{n=split($1,a,"/"); infile=gensub("_R1\\.", "_R#.", "1", $1); basename=gensub(/(.+)_R1.fastq.gz/, "\\1", "1", a[n]) ; printf("cd $PBS_O_WORKDIR; %s in=%s out=trimmed_%s_R#.fastq.gz stats=%s.stats ow && bowtie2 --very-sensitive -p %s -x %s -1 trimmed_%s_R1.fastq.gz -2 trimmed_%s_R2.fastq.gz --un-conc-gz %s_unmapped.fq.gz --no-unal | samblaster | picard AddOrReplaceReadGroups I=/dev/stdin O=%s_BT2_Bc_B05.10.dedup.rg.csorted.bam SM=%s ID=%s_%s LB=%s PL=%s PU=%s CN=%s CREATE_INDEX=true  SO=coordinate \n", command, infile, basename, basename, ncores, genome, basename, basename, basename, basename, basename, basename, NR, basename, RGPL,RGPU, RGCN)}' > ${RUN}.bash
+
+# Run on parallel nodes (faster and preferred)
+
+# Run the commands 
+JOB_NAME=${RUN}
+JOBS_NUM=`wc -l ${RUN}.bash | gawk '{print $1}'`
+BT2_ID=$( qsub -J1-$JOBS_NUM -N ${JOB_NAME:0:11} -vCMDS_FILE=${RUN}.bash  ${RUN}.pbspro ) 
+BT2_ID=$( echo $BT2_ID | egrep -o "[0-9]{7}"  )
+# record the array ID: 5379814[] AGRF batch on Gowonda
+
+# Run FastQC on the output files
+QC_JOB=${BATCH}_trim_qc_"${DATE}"
+QC_JOB_ID=$( echo "cd $( pwd ) ; mkdir $QC_JOB; fastqc -t 12 -o $QC_JOB trimmed_*.fastq.gz" | qsub -V -l select=1:ncpus=12:mem=4GB,walltime=1:00:00  -N trim_qc -W depend=afterok:$BT2_ID[] ) # 5379815.pbsserv
+QC_JOB_ID=$( echo $QC_JOB_ID | egrep -o "[0-9]{7}" )
+
+# Run qualimap on bam files (files need to be sorted)
+QUALIMAP_JOB="${BATCH}_qualimap_${DATE}"
+# copy to the parent folder file describing the sample names (sample_info.txt)
+QUALIMAP_JOB_ID=$( echo "cd $( pwd ) ; unset DISPLAY ; gawk -F'\t' 'NR>1{sample_name=gsub(/ /, \"_\", \$3); printf \"%s\t%s_BT2_Bc_B05.10.dedup.rg.csorted.bam\n\", \$3, \$1}' ../sample_info.txt > $QUALIMAP_JOB.samples ; qualimap multi-bamqc -r -d $QUALIMAP_JOB.samples -outformat PDF:HTML -outdir $QUALIMAP_JOB -outfile $QUALIMAP_JOB.pdf" | qsub -V -l select=1:ncpus=12:mem=8GB,walltime=3:00:00 -N ${QUALIMAP_JOB:0:11} -W depend=afterok:$BT2_ID[] ) # 5379816.pbsserv
+QUALIMAP_JOB_ID=$( echo $QUALIMAP_JOB_ID | egrep -o "[0-9]{7}" )
+
+# multiqc report
+MULTIQC_JOB="${BATCH}_BT2_qc_${DATE}"
+echo "cd $( pwd ) ; multiqc -i $MULTIQC_JOB -o $MULTIQC_JOB ." | qsub -V -l select=1:ncpus=12:mem=4GB,walltime=1:00:00 -N ${MULTIQC_JOB:0:11} -W depend=afterok:$QUALIMAP_JOB_ID:$QC_JOB_ID # 5379817.pbsserver
+
+# collect mapping stats
+cat *.e$BT2_ID.* > ${RUN}.log
+egrep "Created read-group|overall alignment rate" ${RUN}.log | gawk 'BEGIN{printf "sample_id\tmapping_rate\n"} NR%2==1{match($0, /SM=(.+?)$/, a); printf a[1]} NR%2==0{printf "\t%s\n",$1}'   > ${RUN}.stats.tmp
+
+# collect trimming stats
+
+egrep "Input:|Result:" ${RUN}.log | gawk -v OFS="\t" 'BEGIN{printf "input_reads\tinput_bases\tpost_trim_reads\tpost_trim_bases\n"}NR%2==1{printf "%s\t%s\t",$2,$4}NR%2==0{print $2,$5}' | paste ${RUN}.stats.tmp - >  ${RUN}.stats
+
+# merge bams
+IGNORE_SAMS='13_BT2|9_BT2|4_BT2|7_BT2|21_BT2|22_BT2'
+
+# merge to a single file
+BAMS=$( ls -1 ./*.csorted.bam | egrep -v $IGNORE_SAMS | gawk -v ORS=" " '{print $1}' )
+FINAL_MERGE=$( echo "cd $( pwd ) ; sambamba merge -t $NCORES -l 8 B_cinerea.all.csorted.combined.bam $BAMS " | qsub -V -l select=1:ncpus=${NCORES}:mem=96GB,walltime=5:00:00 -N Final_merge ) 
+#FINAL_MERGE=$( echo "cd $( pwd ) ; picard MergeSamFiles USE_THREADING=true SO=coordinate $BAMS O=all.csorted.combined.bam" | qsub -V -l select=1:ncpus=${NCORES}:mem=96GB,walltime=5:00:00 -N Final_merge ) # 5248672.pbsserver
+FINAL_MERGE_ID=$( echo $FINAL_MERGE | egrep -o "[0-9]{7}")
+
+# save read groups to file
+sambamba view -H B_cinerea.all.csorted.combined.bam | grep "^@RG" > B_cinerea_all_read_groups.txt
+
+# merge bams from Fabae isolates to a single file
+FABAE_BAMS=$( ls -1 ./*.csorted.bam | egrep '21_BT2|22_BT2' | gawk -v ORS=" " '{print $1}' )
+FABAE_MERGE=$( echo "cd $( pwd ) ; sambamba merge -t $NCORES -l 8 B_fabae.csorted.combined.bam $FABAE_BAMS " | qsub -V -l select=1:ncpus=${NCORES}:mem=96GB,walltime=5:00:00 -N Fabae_merge ) 
+#FINAL_MERGE=$( echo "cd $( pwd ) ; picard MergeSamFiles USE_THREADING=true SO=coordinate $BAMS O=all.csorted.combined.bam" | qsub -V -l select=1:ncpus=${NCORES}:mem=96GB,walltime=5:00:00 -N Final_merge ) # 5248672.pbsserver
+FABAE_MERGE_ID=$( echo $FABAE_MERGE | egrep -o "[0-9]{7}")
+
+# find and remove empty files
+find . -size 0 -exec rm {} + 
+
+# Check that all jobs finished successfuly
+find . -regextype posix-egrep -regex '\./.*\.e[0-9]{7}.*' | xargs grep "ExitStatus" #  *m.e$JOB_ID.*
+# Done!
+```
+
+
+#### Contaminations in samples
+Both the initial QC and the mapping results show that there were contaminations in the DNA samples of several isolates. This conclusion was obvious from the different GC content signatures of the three isolates (`r figs(name="GC_cont",display="cite")`) compared with the other isolates and from the low mapping rates of these isolates to the _B. cinerea_ reference genome (see bottom of `r tbls(name="mapping_rates",display="cite")`).  
+Isolate 9136 in particular mapped at low rate to the _B. cinerea_ reference genome (~7%).  
+
+```{r QC_GC, eval=TRUE, echo=FALSE, out.width='100%', fig.cap=figs("GC_cont")}
+include_graphics("output/plots/fastqc_per_sequence_gc_content_plot.png")
+```
+
+Samples with less than 40% mapping and x15 coverage were removed from the rest of the analysis (see highlighted rows in `r tbls(name="mapping_rates",display="cite")`).  
+_To process mapping summary table, copy the `xxx.stats` and `qualimap.html` files into the `data` folder_
+
+
+```{r mapping_table, eval=TRUE, echo=FALSE}
+mapping_table <- list.files("data", ".stats", full.names = TRUE) %>% map_df(read_tsv) %>% 
+  rename(Sample_ID=sample_id) %>% 
+  # mutate_at(vars(contains("mapp")),  ~as.numeric(sub("%", "", ., fixed=TRUE))/100) %>%
+  mutate(Mapping_rate=as.numeric(sub("%", "", mapping_rate, fixed=TRUE))/100, 
+         Mapping_tool = "Bowtie2 (v2.3.5)") %>% 
+  #        Sample_id=str_extract(.$sample_id, paste(sequencing_table$Submission_id, collapse = "|"))) %>%
+  # group_by(Sample_id, Mapping_tool) %>%
+  # summarise(Mapping_rate=mean(Mapping_rate)) %>% ungroup() %>%
+  arrange(Sample_ID) %>%  left_join(isolate_table, .) #%>%
+  # mutate( Isolate=sequencing_dict[sample_id]) %>%
+  # dplyr::select(Isolate, Mapping_rate, Mapping_tool, Sample_id, Sequencing_Centre)
+
+# Load qualimap statistics (copy summary html files to raw_data folder)
+
+qualimap_files <- list.files("data", "multisampleBamQcReport.html", full.names = TRUE, 
+                             recursive = TRUE)
+exclude_columns <- c("Coverage std", "Insert size median")
+  # mutate(`Pathog. Group`=samples_table$Pathogenicity[match(samples_table$Isolate, .$Isolate)] ) 
+qualimap_results <-  qualimap_files %>% map_df(~htmltab(., which = "//td/b[text() = 'Sample name']/ancestor::table")) %>% 
+  rename(Sample_name=`Sample name`, Coverage=`Coverage mean`) %>% 
+  # mutate(Sample_ID=as.numeric(Sample_ID)) %>% 
+  dplyr::select(-one_of(exclude_columns)) %>% 
+  mutate_at(.vars = vars(-starts_with("Sample")), .funs = as.numeric) %>%
+  left_join(., mapping_table) %>% 
+  arrange(Sample_ID) %>% set_names(., gsub(" ", "_", colnames(.))) %>%
+  dplyr::select(Sample_ID,Isolate=Sample_name, GC_percentage, Mapping_quality_mean, Mapping_rate, Coverage, Mapping_tool,  Species) %>%
+  write_csv(filedate(glue::glue("Botrytis_WGS_AGRF.mapping.stats"), ".txt", "./output/results", dateformat = FALSE))
+
+
+```
+
+```{r map_stats, eval=TRUE}
+datatable(as.data.frame(qualimap_results %>% mutate_if(is.numeric, ~round(., 2))), caption=tbls("mapping_rates")) %>% #, 
+          # options = list(dom = 'tf', pageLength = 40)) %>%
+  formatStyle("Coverage", target = "row",
+  backgroundColor = styleInterval(c(20,40), c('#ef3125', '#feed95', NA))
+)
+
+# pander(as.data.frame(qualimap_results), caption=tbls("mapping_rates"), justify="left")
+
+# datatable(as.data.frame(mapping_stats), caption = tbls("mapping_rates"), # , width=10
+#           style="default", rownames = FALSE, autoHideNavigation=TRUE) %>% 
+#   formatPercentage('Mapping_rate', 2) %>% #formatStyle('Isolate',
+#   formatStyle('Mapping_rate',
+#     color = styleInterval(c(0.05, 0.5), c('yellow', 'blue', 'black')),
+#     backgroundColor = styleInterval(c(0.05, 0.5), c('red', 'yellow',NA))
+#   )
+```
+
+
+#### Assess genome size and ploidy
+The sequencing data of 4 isolates with sufficient coverage and no apparent contamination were analyzed for their k-mer content (coverage and distribution) to estimate the genome size and ploidy of the genome.  
+k-mer counting and genome ploidy and size estimation were performed with `kmercountexact.sh` (from BBMap v38.34, using the odd numbers in the range of 21-37 as kmers, i.e 21, 23, 25..35, 37 (see [SeqAnsewes thread](http://seqanswers.com/forums/showthread.php?t=64086)).  
+Similar analysis can be performed by Jellyfish (see [tutorial](http://koke.asrc.kanazawa-u.ac.jp/HOWTO/kmer-genomesize.html))
+```{bash kmer_analysis}
+
+DATE=`date +%d_%m_%Y`
+RUN=kmer_analysis_${DATE} # day of run was 02_02_2019
+mkdir ${RUN}
+cd !$
+
+# Prepare PBS script
+echo '#!/bin/bash -x
+#PBS -V
+#PBS -l select=1:ncpus=12:mem=48GB,walltime=00:30:00
+
+cd $PBS_O_WORKDIR
+gawk -v ARRAY_IND=$PBS_ARRAY_INDEX'" 'NR==ARRAY_IND' \${CMDS_FILE} | bash" > ${RUN}.pbspro
+
+# run BB kmercount
+SAMPLES=($(seq 17 20))
+for SAMPLE in "${SAMPLES[@]}"; do
+  ln -s /export/home/s2978925/data/Marzia/B_cinerea_WGS/AGRF_CAGRF20074_HFLHKDRXX/AGRF_BT2_process_19_09_2019/trimmed_${SAMPLE}*.fastq.gz ./
+  seq 21 2 37 | parallel --dry-run kmercountexact.sh k={} in=trimmed_${SAMPLE}_R1.fastq.gz in2=trimmed_${SAMPLE}_R2.fastq.gz khist=${SAMPLE}_khist_k{}.txt peaks=${SAMPLE}_peaks_k{}.txt > ${SAMPLE}_${RUN}.bash
+  # Run the commands 
+  JOB_NAME=bb_kmer
+  JOBS_NUM=$( wc -l ${SAMPLE}_${RUN}.bash | gawk '{print $1}' )
+  qsub -J1-$JOBS_NUM -N ${JOB_NAME:0:11} -vCMDS_FILE=${SAMPLE}_${RUN}.bash ${RUN}.pbspro # 5374038[].pbsserver
+done
+
+# find and remove empty files
+find . -size 0 -exec rm {} + 
+rm *.tmp
+
+# Check that all jobs finished successfuly
+find . -regextype posix-egrep -regex '\./.*\.e[0-9]{7}.*' | xargs grep "ExitStatus" #  *m.e$JOB_ID.*
+
+# aggregate data from all output files (and transpose)
+
+grep "^#" ${SAMPLES[0]}_peaks_k21.txt  | head -n -1 | sed "s/#//" | cat <( printf "sample\t%s\n" $SAMPLE) - | cut -f1 | paste -s > kmer_peaks_summary.txt
+parallel "grep "^#" {1}_peaks_k{2}.txt | head -n -1 | sed "s/#//" | cat  <(echo {1}) - | cut -f2 | paste -s" ::: ${SAMPLES[@]} ::: $(seq 21 2 37) >> kmer_peaks_summary.txt
+# for SAMPLE in "${SAMPLES[@]}"; do
+#  ls -1 ${SAMPLE}_peaks*.txt | parallel "grep "^#" {} | head -n -1 | sed "s/#//" | cat  <(echo $SAMPLE) - | cut -f2 | paste -s" >> kmer_peaks_summary.tst
+#  done
+
+# do the same for the hist data (maybe with gawk)
+gawk 'NR==1{printf "Sample\tkmer\t%s\n", $0}' ${SAMPLES[0]}_khist_k21.txt | sed "s/#//"  >  khist_summary.txt
+parallel "tail -n +2 {1}_khist_k{2}.txt | gawk '{print \"{1}\t{2}\t\"\$0}'" ::: ${SAMPLES[@]} ::: $(seq 21 2 37) >> khist_summary.txt
+
+# Done!
+
+```
+
+``` {r kmer_summary, eval=TRUE, echo=FALSE}
+kmer_hist <- read_tsv("data/khist_summary.txt") %>% 
+  set_names(., c("Sample", "kmer", "Depth", "Count", "logScale")) %>%  mutate(Sample=sequencing_dict[Sample])
+# kmer_hist %>% group_by(Sample) %>% slice(max(main_peak))
+
+kmer_peaks <- read_tsv("data/kmer_peaks_summary.txt")
+# summarise peaks to calculate average predicted genome size and 
+peaks_summary <- kmer_peaks %>%  mutate(Sample=sequencing_dict[sample]) %>% group_by(Sample) %>%
+  summarise(mean_genome_size=mean(genome_size),genome_size_SE=se(genome_size), max_cov=max(main_peak), 
+            ploidy=max(ploidy)) %>% 
+  arrange(max_cov) %>% mutate(Sample=forcats::fct_inorder(Sample), 
+                              genome_label=sprintf("%s\u2009bp (±%s)", scales::comma(mean_genome_size/1000), 
+                                           round(genome_size_SE, digits = 0)))
+```
+
+The selected samples were `r paste0(levels(peaks_summary$Sample), collapse=", ")`, see coverage details in `r tbls(name="mapping_rates",display="cite")`. 
+The resulting kmer count data for all samples and kmers was aggregated into tables and summarised in the following plots
+
+
+``` {r kmer_plot, eval=TRUE, echo=FALSE, out.width='100%', fig.cap=figs("kmer_plots")}
+# limit range (ignore unique kmers with very low depth)
+plot_hist <- kmer_hist %>% filter(Depth<200, Depth>2) %>% 
+  mutate(kmer=factor(kmer), Sample=factor(Sample, levels = levels(peaks_summary$Sample)))#, kmer==31) #  
+
+# filter(k==31) %>% rename(Sample=sample)
+
+# plot for each kmer (check out the following to support UniCODE characters: https://stackoverflow.com/questions/12768176/unicode-characters-in-ggplot2-pdf-output) , thin space: \u2009
+ggplot(plot_hist, mapping = aes(x=Depth, y=Count, colour=kmer)) + 
+  scale_y_continuous(labels = scales::comma) +
+  geom_line(size=1) + scale_color_paletteer_d(pals, tol) + # ggsci, default_aaas; RColorBrewer, Set1; awtools, mpalette
+  facet_wrap(vars(Sample)) + plot_theme(baseSize = 16) + 
+  geom_text(aes(x=15, y=2.0e6, 
+                label=sprintf("Predicted ploidy=%sn\nGenome size=%s(±%s) Kbp", ploidy, 
+                              scales::comma(mean_genome_size/1000), round(genome_size_SE/1000, digits = 1))),  
+                        # format(genome_size, scientific = TRUE, digits = 3))) / comma(genome_size)
+            data=peaks_summary, hjust=0, colour="black", size=3.5)
+
+```
+
+``` {r kmer_save_plot, eval=TRUE, include=FALSE}
+# plot for each kmer (check out the following to support UniCODE characters: https://stackoverflow.com/questions/12768176/unicode-characters-in-ggplot2-pdf-output) , thin space: \u2009
+ggplot(plot_hist, mapping = aes(x=Depth, y=Count, colour=kmer)) + 
+  scale_y_continuous(labels = scales::comma) +
+  geom_line(size=1) + scale_color_paletteer_d(pals, tol) + # ggsci, default_aaas; RColorBrewer, Set1; awtools, mpalette
+  facet_wrap(vars(Sample)) + plot_theme() + 
+  geom_text(aes(x=15, y=2.0e6, 
+                label=sprintf("Predicted ploidy=%sn\nGenome size=%s(±%s) Kbp", ploidy, 
+                              scales::comma(mean_genome_size/1000), round(genome_size_SE/1000, digits = 1))),  
+                        # format(genome_size, scientific = TRUE, digits = 3))) / comma(genome_size)
+            data=peaks_summary, hjust=0, colour="black", size=5)
+
+ggsave(filedate("Botrytis_cinerea_2019_kmer_analysis_size_CI", ".pdf", "output/plots"),  width=13, height=7.5)
+```
+
+
+#### Extract primer regions
+The alignment files of the samples (excluding the ones that did not pass QC) were combined into a single file that was used cropped to the primer regions to focus and vsualise the alignments.
+
+```{bash crop_bams}
+# save read groups to file
+sambamba view -H all.csorted.combined.bam | grep "^@RG" > all_read_groups.txt
+# BAM_FILES=$( ls -1 $MERGE_JOB/*.csorted.bam | gawk -vORS=" " '1' )
+# calculate coverage
+CALC_COV=$( echo "cd $( pwd ) ;  sambamba depth base --combined all.csorted.combined.bam | cut -f 1-3 | tail -n +2 | coverage_to_regions.py $GENOME.fasta.fai 500 > targets.regions " | qsub -V -l select=1:ncpus=${NCORES}:mem=96GB,walltime=5:00:00 -N Calc_cov -W depend=afterok:$FINAL_MERGE_ID ) # 5248672.pbsserver
+CALC_COV_ID=$( echo $CALC_COV | egrep -o "[0-9]{7}")
+# /export/home/s2978925/.pyenv/versions/miniconda2-latest/bin/bamtools coverage -in
+# prepare Freebayes commands
+FB=freebayes_${DATE}
+FB_CMDS=$( echo "cd $( pwd ) ; cat targets.regions | parallel --dry-run -k \"freebayes -p $PLOIDY -f $GENOME.fasta all.csorted.combined.bam --region {}\" > $FB.cmds" | qsub -V -l select=1:ncpus=${NCORES}:mem=96GB,walltime=5:00:00 -N FB_cmds -W depend=afterok:$CALC_COV_ID ) # 5248672.pbsserver
+# get job_id
+FB_CMDS_ID=$( echo $FB_CMDS | egrep -o "[0-9]{7}")
+
+# Send freebayes jobs to the cluster
+# Prepare PBS script
+echo '#!'"/bin/bash -v
+#PBS -V
+#PBS -l select=1:ncpus=${NCORES}:mem=64GB,walltime=20:00:00
+"'
+cd $PBS_O_WORKDIR
+ARRAYID=$( echo $PBS_ARRAY_ID | egrep -o "[0-9]{7}" )
+gawk -v ARRAY_IND=$PBS_ARRAY_INDEX'" 'NR>(${NCORES}*3*(ARRAY_IND-1)) && NR<=(ARRAY_IND*${NCORES}*3)' \${CMDS_FILE} | parallel -k -j ${NCORES} --joblog"' ${CMDS_FILE}.p$ARRAYID.$PBS_ARRAY_INDEX' > freebayes.pbspro
+
+NCMDS=$( wc -l $FB.cmds | gawk '{print $1}')
+NJOBS=$(( NCMDS/NCORES/3 + 1  ))
+FB_JOB=$( qsub -J1-$NJOBS -N ${FB:0:11} -W depend=afterok:$FB_CMDS_ID -vCMDS_FILE=$FB.cmds freebayes.pbspro )
+# 5270639[1-4] completed successfully (the rest needed more processing time)
+FB_JOB_ID=$( echo $FB_JOB | egrep -o "[0-9]{7}")
+
+CONCAT_FB=$( echo "cd $( pwd ) ; cat *.o$FB_JOB_ID* | vcffirstheader | vcfstreamsort -w 1000 | vcfuniq > A_rabiei_2018_isolates_haplo.fb.vcf" | qsub -V -l select=1:ncpus=${NCORES}:mem=96GB,walltime=10:00:00 -N FB_vcf -W depend=afterok:$FB_JOB_ID[] -m e -M i.bar@griffith.edu.au)
+CONCAT_FB_ID=$( echo $CONCAT_FB | egrep -o "[0-9]{7}" )
+
+# check for success/failure of FB commands
+tail -n +2 $FB.cmds.p*.* | cut -f7,9 | gawk '$1==1' > $FB.failed.cmds
+tail -n +2 $FB.cmds.p*.* | cut -f7,9 | gawk '$1==0' > $FB.successful.cmds
+
+# Produce vcf stats
+SAMPLES=$( cut -f6 all_read_groups.txt | gawk -F":" -vORS="," '{print $2}' | sed 's/,$//' )
+FB_STATS=$( echo "cd $( pwd ) ; mkdir ${FB}_stats; bcftools stats -F $GENOME.fasta -s $SAMPLES A_rabiei_2018_isolates_haplo.fb.vcf > ${FB}_stats/A_rabiei_2018_isolates_haplo.fb.vcf.stats; plot-vcfstats -p ${FB}_stats ${FB}_stats/A_rabiei_2018_isolates_haplo.fb.vcf.stats" | qsub -V -l select=1:ncpus=${NCORES}:mem=96GB,walltime=10:00:00 -N FB_vcfstats -W depend=afterok:$CONCAT_FB_ID -m e -M i.bar@griffith.edu.au)
+FB_STATS_ID=$( echo $FB_STATS | egrep -o "[0-9]{7}" )
+
+# find and remove empty files
+find . -size 0 -exec rm {} +
+
+# check jobs completion
+find . -regextype posix-egrep -regex '\./.*\.e[0-9]{7}.*' | xargs grep "ExitStatus"
+
+```
+
+
+
+## Appendix 1. Useful resources
+
+* Whole-Genome Comparison of _Aspergillus fumigatus_ Strains Serially Isolated from Patients with Aspergillosis. [@hagiwara_whole-genome_2014]:
+
+> **Sequence analysis:** The Illumina data sets were trimmed using fastq-mcf in ea-utils (version 1.1.2-484), i.e., sequencing adapters and sequences with low quality scores (Phred score [Q], <30) were removed (24). The data sets were mapped to the genome sequence of the _A. fumigatus_ genome reference strain Af293 (29,420,142 bp, genome version s03-m04-r03) (25, 26) using Bowtie 2 (version 2.0.0-beta7) with the very sensitive option in end-to-end mode (27). Duplicated reads were removed using Picard (version 1.112) (<http://picard.sourceforge.net>). The programs mpileup and bcftools from SAMtools (version 0.1.19-44428cd) were used to perform further quality controls. In mpileup, the -q20 argument was used to trim reads with low-quality mapping, whereas the argument -q30 was used to trim low-quality bases at the 3' end (28). The bcftools setting was set to -c in order to call variants using Bayesian inference. Consensus and single nucleotide polymorphisms (SNPs) were excluded if they did not meet a minimum coverage of 5x or if the variant was present in <90% of the base calls (29, 30). The genotype field in the variant call format (VCF) files indicates homozygote and heterozygote probabilities as Phred-scaled likelihoods. SNPs were excluded if they were called as heterozygous genotypes using SAMtools. The mapping results were visualized in the Integrative Genomics Viewer (version 2.3.3) (31, 32). The reference genome data included information on open reading frames and annotations, from which the SNPs were designated non-synonymous or synonymous.  
+Single nucleotide mutations were confirmed by Sanger sequencing. Regions of approximately 400 bp that contained a mutation were amplified with appropriately designed primer pairs and then sequenced. The primer sequences are listed in Table S1 in the supplemental material, which were named as follows. For verification of the SNPs in strains from patient I or patient II, PaI or PaII was added to the primer name, respectively. For non-synonymous SNPs, synonymous SNPs, or SNPs in a non-coding region, (NS, Syno, NonC) was added to the primer name, respectively.  
+**Analysis of unmapped reads:** _De novo_ assembly of the unmapped reads was conducted using the Newbler assembler 2.9 (Roche), with default parameters. The contigs were selected based on size/depth criteria: those of <500 bp and/or with a depth of <30x coverage were removed. To investigate whether unique genome sequences were present in strains isolated from the same patient, the unmapped reads of each strain were mapped to the contigs generated from all the strains in the same patient by the Bowtie 2 software. The coverage of the mapped regions was then evaluated. Gene predictions were performed using the gene prediction tool AUGUSTUS (version 2.5.5), with a training set of  _A. fumigatus_ (33). The parameters of AUGUSTUS were -species = aspergillus_fumigatus, -strand = both, -genemodel = partial, -singlestrand = false, -protein = on, -introns = on, -start = on, -stop = on, -cds = on, and -gff3 = on. To compare all the predicted genes with _Aspergillus_ genes, consisting of 244,811 genes available on AspGD (34), a reciprocal BLAST best hit approach was performed by BLASTp (35), with an E value of 1.0e<sup>-4</sup>. All BLASTp results were filtered based on a BLASTp identity of $\ge 80$% and an aligned length coverage of $\ge 80$%.
+
+## General information
+This document was last updated at `r Sys.time()` using R Markdown (built with `r R.version.string`). Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. It is especially powerful at authoring documents and reports which include code and can execute code and use the results in the output. For more details on using R Markdown see <http://rmarkdown.rstudio.com> and [Rmarkdown cheatsheet](https://www.rstudio.com/wp-content/uploads/2016/03/rmarkdown-cheatsheet-2.0.pdf).
+
+***
+## Bibliography
+
+<!-- ```{r results='asis', eval=TRUE} -->
+<!-- PrintBibliography(biblio) -->
+<!-- ``` -->
+
