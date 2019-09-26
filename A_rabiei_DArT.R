@@ -247,6 +247,81 @@ ggsave(filedate(glue::glue("Aus_samples_PCA_state_year_PC{paste(plot_comps, coll
 # glsub2@other$ind.metrics <- gl@other$ind.metrics[index.ind,] #not necessary
 # glsub2@other$loc.metrics <- gl@other$loc.metrics[index.loc,] #necessary
 
+#### Population Analysis ####
+##### Assume one big population #####
+strata(glsub) <- metadata %>% filter(indNames %in% indNames(glsub)) %>% select(Location, State, Year, Host, Pathotype, Path_rating, Haplotype)
+setPop(glsub) <- ~State
+#### poppr diversity analysis #####
+# convert to genclone object
+Arab_gclone <- as.genclone(gl2gi(glsub), strata=strata(glsub))
+Arab_gclone@strata <- strata(glsub)
+# pdf("./output/plots/DArT_genotype_accumulation_curve.pdf", width = 8, height = 6) 
+# genotype_curve(Arab_gclone, sample = 1000, quiet = TRUE)
+# dev.off()
+# Contract MLGs based on distance
+Arab_dist <- bitwise.dist(Arab_gclone, mat=TRUE, euclidean = FALSE, percent = FALSE)
+mlg.filter(Arab_gclone, distance = Arab_dist) <- 1 + .Machine$double.eps^0.5
+
+
+# Generate population genetics metrices
+region_pop_gen <- poppr(Arab_gclone) %>% mutate(lambda_corr=N/(N - 1) * lambda, CF=MLG/N)  %>% 
+  write_xlsx(., "./output/A_rabiei_DArT_poppr.xlsx", "by_region_all_years", asTable = FALSE)
+pdf("./output/plots/A_rabiei_DArT_poppr_rare_state.pdf", width = 8, height = 6) 
+region_rare <- diversity_ci(Arab_gclone, n=100, rarefy = TRUE, raw=FALSE) %>% 
+  write_xlsx(., "./output/A_rabiei_DArT_poppr.xlsx", "by_region_rare", asTable = FALSE, append=TRUE)
+dev.off()
+
+Arab_by_years <- Arab_gclone
+
+setPop(Arab_by_years) <- ~Year
+Arab_by_years <- Arab_by_years[!is.na(pop(Arab_by_years))]
+
+# Generate population genetics metrices
+year_pop_gen <- poppr(Arab_by_years) %>% mutate(lambda_corr=N/(N - 1) * lambda, CF=MLG/N) %>%  
+  write_xlsx(., "./output/A_rabiei_DArT_poppr.xlsx", "by_year_all_regions", asTable = FALSE, append = TRUE)
+pdf("./output/plots/A_rabiei_DArT_poppr_rare_year.pdf", width = 8, height = 6) 
+year_pop_gen_rare <- diversity_ci(Arab_by_years, n=100, rarefy = TRUE, raw=FALSE) %>% 
+  write_xlsx(., "./output/A_rabiei_DArT_poppr.xlsx", "by_year_rare", asTable = FALSE, append=TRUE)
+dev.off()
+
+#### plot haplotype Networks ####
+# By state
+# pe_data <- Arab_gclone # %>%  missingno("genotype", cutoff=0.2)
+# Calculate the MSN
+pc_colors <- nPop(Arab_gclone) %>% 
+  RColorBrewer::brewer.pal("Set1") %>% 
+  setNames(c("QLD", "NSW", "VIC", "SA", "WA"))
+# Contract MLGs based on distance
+setPop(Arab_gclone) <- ~State
+mdist <- bitwise.dist(Arab_gclone, mat=TRUE, euclidean = FALSE, percent = FALSE)
+set.seed(120)
+pdf(filedate(sprintf("Arab_regions_msn_all_hosts"), ".pdf", "output/plots"), width = 10, height = 7)
+pe_data.msn <- poppr.msn(Arab_gclone, mdist, showplot = TRUE, threshold = 1 + .Machine$double.eps^0.5,
+                         palette = pc_colors, vertex.label = NA, margin=rep(-0.2,4))
+dev.off()
+# Visualize the network
+set.seed(120)
+pdf(filedate(sprintf("Arab_regions_msn_all_hosts2"), ".pdf", "output/plots"), width = 10, height = 7)
+plot_poppr_msn(Arab_gclone, pe_data.msn,  palette = pc_colors,  nodescale = 15, inds = "none",
+               margin=rep(0,4))#, nodebase = 1.25) #  
+dev.off()
+
+# By Pathotype
+# Calculate the MSN
+setPop(Arab_gclone) <- ~Pathotype
+
+brewer.pal.info
+pc_colors <-  brewer.pal(9, "RdYlGn")[round(seq(1,9, length.out = nPop(Arab_gclone) ) ,0)] %>% rev(.) %>% 
+  setNames(paste0("Group", 0:5) )
+# Contract MLGs based on distance
+
+mdist <- bitwise.dist(Arab_gclone, mat=TRUE, euclidean = FALSE, percent = FALSE)
+set.seed(120)
+pdf(filedate(sprintf("Arab_regions_msn_patho"), ".pdf", "output/plots"), width = 10, height = 7)
+pe_data.msn <- poppr.msn(Arab_gclone, mdist, showplot = TRUE, threshold = 1 + .Machine$double.eps^0.5,
+                         palette = pc_colors, vertex.label = NA, margin=rep(-0.2,4))
+dev.off()
+
 
 
 #### Haplotype Analysis ####
