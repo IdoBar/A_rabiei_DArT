@@ -6,7 +6,7 @@ devtools::source_gist("7f63547158ecdbacf31b54a58af0d1cc", filename = "util.R")
 # install.packages(c("backports", "colorspace", "adegenet"))
 # load packages we're going to use
 BiocManager::install("qvalue", update = FALSE)
-pacman::p_load(  tidyverse, forcats, RColorBrewer, paletteer, ggrepel, glue, dartR, poppr) # quadprog, raster, mvtnorm,
+pacman::p_load(  tidyverse, forcats, RColorBrewer, paletteer, ggrepel, glue, dartR, poppr, SNPassoc ) # quadprog, raster, mvtnorm,
 
 #### Read DArT Data ####
 pheno_file <- recent_file("data", "A_rabiei_pathotypes.+.xlsx")
@@ -17,8 +17,11 @@ taxa_table <- readxl::read_excel("data/Taxa_DArTseq_Plates1-2_5-05-19.xlsx", na 
   mutate(Host=sub("^Genesis09[0-9]+$", "Genesis090", 
                   sub(" ", "", sub("PBA ", "", Host)))) %>% 
   mutate_at(.vars=c("Year"), as.numeric) %>% select(Taxa, Location,  State, Year, Host, Haplotype) %>% 
-  full_join(isolate_table) %>% mutate(State=sub("[^A-Z]", "", toupper(State))) # Host=sub("CICA.+", "CICA1152", Host), 
+  full_join(isolate_table) %>% mutate(State=sub("[^A-Z]", "", toupper(State))) %>% # Host=sub("CICA.+", "CICA1152", Host), 
+  write_xlsx("data/5_year_complete_SSR_db.xlsx", "2013-2018_pheno", append=TRUE, asTable=FALSE)
 ssr_haplos <- readxl::read_excel("data/5_year_complete_SSR_db.xlsx")
+
+
 # gl1_2 <- gl.read.dart("data/Report_DAsc19-4108_ArabieiPlates1-2/Report_DAsc19-4108_1_moreOrders_SNP_mapping_2.csv") 
 gl3 <- gl.read.dart("data/Report-DAsc19-4353_ArabieiPlate3/Report_DAsc19-4353_1_moreOrders_SNP_mapping_2.csv")
 
@@ -251,6 +254,15 @@ ggsave(filedate(glue::glue("Aus_samples_PCA_state_year_PC{paste(plot_comps, coll
 ##### Assume one big population #####
 strata(glsub) <- metadata %>% filter(indNames %in% indNames(glsub)) %>% select(Location, State, Year, Host, Pathotype, Path_rating, Haplotype)
 setPop(glsub) <- ~State
+strata_factors <- metadata %>% filter(indNames %in% indNames(glsub)) %>%
+    select(indNames, Location, State, Year, Host, Pathotype, Path_rating, Haplotype, Taxa) %>%
+    mutate(State=factor(State, levels = c("QLD", "NSW", "VIC", "SA", "WA")),
+    Year=factor(Year, levels=as.character(min(Year, na.rm = TRUE):max(Year, na.rm = TRUE))),
+    Host=fct_relevel(fct_infreq(fct_lump_min(Host, min=6)), "Other", after = Inf),
+    Haplotype=fct_relevel(fct_infreq(fct_lump_min(Haplotype, min=2)), "Other", after = Inf),
+    Pathotype=factor(Pathotype, levels=paste0("Group", 0:5))) %>%
+    mutate_at(vars(Year, Host, Haplotype, Pathotype), ~fct_explicit_na(., na_level = "Unknown"))
+
 #### poppr diversity analysis #####
 # convert to genclone object
 Arab_gclone <- as.genclone(gl2gi(glsub), strata=strata(glsub))
@@ -326,9 +338,60 @@ dev.off()
 
 #### Haplotype Analysis ####
 # make haplotypes
-dart_haplos <- make_haplotypes(gl3)
-# gl3@ind.names <- ind_names$fixed_names
-ploidy(gl3) <- 1
+# dart_haplos <- make_haplotypes(gl3)
+# # gl3@ind.names <- ind_names$fixed_names
+# ploidy(gl3) <- 1
+
+#### Pathogenicity Association ####
+# column_to_rownames("Taxa") %>% mutate(Patho_level=if_else(Path_rating>3, "High", "Low"),
+# Patho_fact=factor(Patho_level, levels = c("Low", "High")) )
+# SNP.info.pos <- data.frame(snp=locNames(glsub), #,
+#                             chr=glsub@other$loc.metrics$Chrom_Ascochyta_rabiei_vX,
+#                             pos=glsub@other$loc.metrics$ChromPos_Ascochyta_rabiei_vX+glsub@other$loc.metrics$SnpPosition,
+#                             snp_safe_name=gsub("[-\\/]", ".", paste0("X", locNames(glsub))),
+#                             stringsAsFactors = FALSE) %>%
+# filter(snp_safe_name %in% colnames(export_snps))
+# SNP.info.pos <- data.frame(snp=gsub("[-\\/]", ".", paste0("X", locNames(glsub))), #,
+#                            chr=glsub@other$loc.metrics$Chrom_Ascochyta_rabiei_vX,
+#                            pos=glsub@other$loc.metrics$ChromPos_Ascochyta_rabiei_vX+glsub@other$loc.metrics$SnpPosition,
+#                            snp_name=,
+#                            stringsAsFactors = FALSE) %>%
+#   filter(snp_safe_name %in% colnames(export_snps))
+# myData <- gl2sa(glsub) %>% mutate(Isolate=strata_factors$Taxa, Pathogenicity=strata_factors$Path_rating)
+myData <- setupSNP(data=export_snps,colSNPs=1:nrow(SNP.info.pos),sep="/",
+                    info=SNP.info.pos, sort = TRUE)
+
+export_snps <- gl2sa(glsub) %>%  bind_cols(strata_factors %>% select(Taxa, Path_rating)) %>%
+      column_to_rownames("Taxa") %>% mutate(Patho_level=if_else(Path_rating>3, "High", "Low"),
+      Patho_fact=factor(Patho_level, levels = c("Low", "High")) )
+SNP.info.pos <- data.frame(snp=gsub("[-\\/]", ".", paste0("X", locNames(glsub))), #,
+      chr=glsub@other$loc.metrics$Chrom_Ascochyta_rabiei_vX,
+      pos=glsub@other$loc.metrics$ChromPos_Ascochyta_rabiei_vX+glsub@other$loc.metrics$SnpPosition,
+      snp_name=locNames(glsub),
+      stringsAsFactors = FALSE) %>%
+      filter(snp %in% colnames(export_snps))
+nrow(SNP.info.pos)
+SNP.info.pos
+# myData <- gl2sa(glsub) %>% mutate(Isolate=strata_factors$Taxa, Pathogenicity=strata_factors$Path_rating)
+myData <- setupSNP(data=export_snps,colSNPs=1:nrow(SNP.info.pos),sep="/",
+                    info=SNP.info.pos, sort = TRUE)
+myData[1:10,1:10]
+# Check missingness
+# plotMissing(myData)
+# Perform association test to Pathogenicity level
+res <- WGassociation(Path_rating, data=myData, model="all") # try different models
+# res <- scanWGassociation(Pathogenicity, data=myData, model="all")
+# Check summary
+p_val <- 1e-3
+min_snps <- 50
+FDR <- 0.05
+# Calculate qvalue
+res_selected <-res[!is.na(res$`log-additive`)]
+res_df <- cbind(attr(res_selected, "gen.info"), "pvalue"=res_selected$`log-additive`) %>%
+                bind_cols(., GenABEL::qvaluebh95(.$pvalue, FDR)) %>%
+write_xlsx("output/A_rabiei_pathogenicity_snpassoc_results.xlsx", asTable=FALSE, sheet = "snpassoc_results")
+# check if it found ny significant SNPs
+res_df %>% filter(significant!=FALSE)
 
 
-as.matrix(gl3)[,1:10]
+
