@@ -72,6 +72,7 @@ gl.report.callrate(Arab_gl, method = "ind", v = 3) # the 2 individuals from Spai
 gl.report.repavg(Arab_gl)
 # check multiple loci per tag and reproducibility
 gl.report.secondaries(Arab_gl)
+
 # apply filters
 missing_thres <- 0.2
 glsub <- Arab_gl %>% gl.filter.callrate(., method = "loc", threshold = (1-missing_thres), v = 3) %>% 

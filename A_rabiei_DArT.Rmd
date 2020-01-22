@@ -59,7 +59,7 @@ tbls(name="mapping_sum", "Mapping statistics.")
 ```
 
 # Experimental Design
-DNA was extracted from 279 isolates of Australian _Ascochyta rabiei_ and 2 Spanish _A. rabiei_ isolates and sent for DArT-Sequencing at Diversity Array Technologies (DArT, Canberra) on a single flowcell an Illumina NovaSeq, producing 150 bp short paired-end reads (run name CAGRF20074).  
+DNA was extracted from 279 isolates of Australian _Ascochyta rabiei_ and 2 Spanish _A. rabiei_ isolates and sent for DArT-Sequencing at Diversity Array Technologies (DArT, Canberra) on a single Illumina NovaSeq flowcell, producing 150 bp short paired-end reads (run name CAGRF20074).  
 Details of the sequenced isolates is provided in (`r tbls(name="samples",display="cite")`).
 
 ```{r samples_table, eval=TRUE} 
