@@ -10,15 +10,24 @@ pacman::p_load(  tidyverse, forcats, RColorBrewer, paletteer, ggrepel, glue, dar
 
 #### Read DArT Data ####
 pheno_file <- recent_file("data", "A_rabiei_pathotypes.+.xlsx")
-isolate_table <- readxl::read_excel(path = pheno_file , sheet = "pathotyping") %>% select(-one_of(c("Location"))) %>% mutate(Taxa=Isolate) %>%
+isolate_table <- readxl::read_excel(path = pheno_file , sheet = "pathotyping") %>% #select(-one_of(c("Location"))) %>% 
+  mutate(Taxa=Isolate) %>%
   mutate(Host=sub("^Genesis09[0-9]+$", "Genesis090", 
                   sub(" ", "", sub("PBA ", "", Host))))
+taxa_regions <- readxl::read_excel("output/dart_samples_sum_IB_S.xlsx", sheet = "taxa_regions") %>% 
+  select(Taxa, Region)
+
 taxa_table <- readxl::read_excel("data/Taxa_DArTseq_Plates1-2_5-05-19.xlsx", na = c("N/A", "")) %>%
+  inner_join(taxa_regions) %>% 
   mutate(Host=sub("^Genesis09[0-9]+$", "Genesis090", 
                   sub(" ", "", sub("PBA ", "", Host)))) %>% 
-  mutate_at(.vars=c("Year"), as.numeric) %>% select(Taxa, Location,  State, Year, Host, Haplotype) %>% 
-  full_join(isolate_table) %>% mutate(State=sub("[^A-Z]", "", toupper(State))) %>% # Host=sub("CICA.+", "CICA1152", Host), 
-  write_xlsx("data/5_year_complete_SSR_db.xlsx", "2013-2018_pheno", append=TRUE, asTable=FALSE)
+  mutate_at(.vars=c("Year"), as.numeric) %>% select(Taxa, Location,  State, Region, Year, Host, Haplotype) %>% 
+  full_join(isolate_table, by = c("Taxa", "State", "Year", "Host")) %>% mutate(State=sub("[^A-Z]", "", toupper(State))) %>% 
+  mutate(Location=if_else(is.na(Location.x), Location.y, Location.x)) %>% 
+  # Host=sub("CICA.+", "CICA1152", Host), 
+  write_xlsx("data/5_year_complete_SSR_db.xlsx", "2013-2018_pheno", overwritesheet=TRUE, asTable=FALSE)
+  
+taxa_table %>% filter(is.na(Location))
 ssr_haplos <- readxl::read_excel("data/5_year_complete_SSR_db.xlsx")
 
 
@@ -39,15 +48,23 @@ replace_names <- c("122/17-1"= "122-1/17","122/17-2"="122-2/17","122/17-3"="122-
 taxa_table %>% count(Host) %>% filter(grepl("CICA", Host))
 taxa_table %>% count(Taxa) %>% filter(n>1)
 taxa_table %>% filter(grepl("MER", Taxa))
+taxa_table %>% count(Region)
 
 metadata <- tibble(indNames=indNames(gl3)) %>% 
-  mutate(Taxa=if_else(is.na(replace_names[indNames]), indNames, replace_names[indNames])) %>% 
+  mutate(Taxa=if_else(is.na(replace_names[indNames]), indNames, replace_names[indNames]))  %>% 
   # left_join(isolate_table, by = c("Taxa"="Isolate")) %>% 
   left_join(taxa_table) 
+
+
+# %>% 
+  mutate(Region=case_when(State=="QLD"~"Reg1", State=="WA"~"Reg6",State=="SA"~"Reg5", State=="VIC"~"Reg4", TRUE~Region))
+
+metadata$Region[metadata$State=="WA"] <- "Reg6"
+metadata %>% filter(is.na(Region))
   
 
 metadata %>% 
-  select(id=indNames, Location, State, Year, Host, Pathotype, Path_rating, Haplotype)  %>% 
+  select(id=indNames, Location, State, Region, Year, Host, Pathotype, Path_rating, Haplotype)  %>% 
   write_csv("data/DArT_metadata.csv")
 # double check matching names and length
 length(indNames(gl3)) == nrow(metadata)
@@ -156,7 +173,7 @@ outliers <- pca_data %>% filter(State=="Spain")
 # Create the plot for C1 and C2
 plot_comps <- 1:2
 plot_axes <- paste0("Axis", plot_comps)
-ggplot(pca_data, aes(x=!!sym(plot_axes[1]), y=!!sym(plot_axes[2]), shape=State, fill=Pathotype)) + 
+ggplot(pca_data, aes(x=!!sym(plot_axes[1]), y=!!sym(plot_axes[2]), shape=Region, fill=Pathotype)) + 
   geom_point(alpha = 0.85, size=5) +
   scale_fill_brewer(palette = "RdYlGn", direction = -1) +
   # scale_fill_paletteer_d("RColorBrewer", "RdYlGn", direction = -1 ) + # ggsci, category10_d3
@@ -223,13 +240,13 @@ ggsave(filedate(glue::glue("Aus_samples_PCA_state_highpatho_PC{paste(plot_comps,
 # shape - Year, Seq.Provider, Host (State)
 # Colors - Haplotype (qualitative), State (qualitative), Pathotype (diverging - RdYlGn)
 palettes_d_names %>% filter(type=="qualitative", length>11)
-
+palettes_d_names %>% filter(type=="qualitative", length>11)
 # Size - Pathogenicity
 # Create the plot for C1 and C2
 shapes <- 0:6# as.character(3:8)#
 plot_comps <- 1:2
 plot_axes <- paste0("Axis", plot_comps)
-ggplot(pca_data, aes(x=!!sym(plot_axes[1]), y=!!sym(plot_axes[2]), shape=fct_inseq(factor(Year)), colour=State)) + 
+ggplot(pca_data, aes(x=!!sym(plot_axes[1]), y=!!sym(plot_axes[2]), shape=fct_inseq(factor(Year)), colour=Region)) + 
   geom_point(alpha = 0.85, size=3, stroke = 1.5) +
   scale_colour_brewer(palette = "Set1") +
   # scale_colour_paletteer_d("rcartocolor", "Bold") + # ggsci, category10_d3
@@ -253,21 +270,21 @@ ggsave(filedate(glue::glue("Aus_samples_PCA_state_year_PC{paste(plot_comps, coll
 
 #### Population Analysis ####
 ##### Assume one big population #####
-strata(glsub) <- metadata %>% filter(indNames %in% indNames(glsub)) %>% select(Location, State, Year, Host, Pathotype, Path_rating, Haplotype)
-setPop(glsub) <- ~State
+
 strata_factors <- metadata %>% filter(indNames %in% indNames(glsub)) %>%
-    select(indNames, Location, State, Year, Host, Pathotype, Path_rating, Haplotype, Taxa) %>%
+    select(indNames, Location, State, Region, Year, Host, Pathotype, Path_rating, Haplotype, Taxa) %>%
     mutate(State=factor(State, levels = c("QLD", "NSW", "VIC", "SA", "WA")),
     Year=factor(Year, levels=as.character(min(Year, na.rm = TRUE):max(Year, na.rm = TRUE))),
     Host=fct_relevel(fct_infreq(fct_lump_min(Host, min=6)), "Other", after = Inf),
     Haplotype=fct_relevel(fct_infreq(fct_lump_min(Haplotype, min=2)), "Other", after = Inf),
     Pathotype=factor(Pathotype, levels=paste0("Group", 0:5))) %>%
-    mutate_at(vars(Year, Host, Haplotype, Pathotype), ~fct_explicit_na(., na_level = "Unknown"))
-
+    mutate_at(vars(Year, Host, Haplotype, Pathotype, Region), ~fct_explicit_na(., na_level = "Unknown"))
+glsub@strata <- metadata %>% filter(indNames %in% indNames(glsub)) %>% select(Location, State, Region, Year, Host, Pathotype, Path_rating, Haplotype)
+setPop(glsub) <- ~Region
 #### poppr diversity analysis #####
 # convert to genclone object
 Arab_gclone <- as.genclone(gl2gi(glsub), strata=strata(glsub))
-Arab_gclone@strata <- strata(glsub)
+Arab_gclone@strata <- strata_factors # strata(glsub)
 # pdf("./output/plots/DArT_genotype_accumulation_curve.pdf", width = 8, height = 6) 
 # genotype_curve(Arab_gclone, sample = 1000, quiet = TRUE)
 # dev.off()
@@ -278,10 +295,10 @@ mlg.filter(Arab_gclone, distance = Arab_dist) <- 1 + .Machine$double.eps^0.5
 
 # Generate population genetics metrices
 region_pop_gen <- poppr(Arab_gclone) %>% mutate(lambda_corr=N/(N - 1) * lambda, CF=MLG/N)  %>% 
-  write_xlsx(., "./output/A_rabiei_DArT_poppr.xlsx", "by_region_all_years", asTable = FALSE)
+  write_xlsx(., "./output/A_rabiei_DArT_poppr.xlsx", "years_by_region", asTable = FALSE, overwritesheet = TRUE)
 pdf("./output/plots/A_rabiei_DArT_poppr_rare_state.pdf", width = 8, height = 6) 
 region_rare <- diversity_ci(Arab_gclone, n=100, rarefy = TRUE, raw=FALSE) %>% 
-  write_xlsx(., "./output/A_rabiei_DArT_poppr.xlsx", "by_region_rare", asTable = FALSE, append=TRUE)
+  write_xlsx(., "./output/A_rabiei_DArT_poppr.xlsx", "by_region_rare", asTable = FALSE, append=TRUE, overwritesheet = TRUE)
 dev.off()
 
 Arab_by_years <- Arab_gclone
@@ -291,10 +308,11 @@ Arab_by_years <- Arab_by_years[!is.na(pop(Arab_by_years))]
 
 # Generate population genetics metrices
 year_pop_gen <- poppr(Arab_by_years) %>% mutate(lambda_corr=N/(N - 1) * lambda, CF=MLG/N) %>%  
-  write_xlsx(., "./output/A_rabiei_DArT_poppr.xlsx", "by_year_all_regions", asTable = FALSE, append = TRUE)
+  write_xlsx(., "./output/A_rabiei_DArT_poppr.xlsx", "by_year_all_regions", asTable = FALSE, append = TRUE, 
+             overwritesheet = TRUE)
 pdf("./output/plots/A_rabiei_DArT_poppr_rare_year.pdf", width = 8, height = 6) 
 year_pop_gen_rare <- diversity_ci(Arab_by_years, n=100, rarefy = TRUE, raw=FALSE) %>% 
-  write_xlsx(., "./output/A_rabiei_DArT_poppr.xlsx", "by_year_rare", asTable = FALSE, append=TRUE)
+  write_xlsx(., "./output/A_rabiei_DArT_poppr.xlsx", "by_year_rare", asTable = FALSE, append=TRUE, overwritesheet = TRUE)
 dev.off()
 
 #### plot haplotype Networks ####
@@ -303,9 +321,11 @@ dev.off()
 # Calculate the MSN
 pc_colors <- nPop(Arab_gclone) %>% 
   RColorBrewer::brewer.pal("Set1") %>% 
-  setNames(c("QLD", "NSW", "VIC", "SA", "WA"))
+  setNames(levels(strata_factors$Region))
+  # setNames(c("QLD", "NSW", "VIC", "SA", "WA"))
 # Contract MLGs based on distance
-setPop(Arab_gclone) <- ~State
+Arab_gclone@strata <- strata_factors
+setPop(Arab_gclone) <- ~Region
 mdist <- bitwise.dist(Arab_gclone, mat=TRUE, euclidean = FALSE, percent = FALSE)
 set.seed(120)
 pdf(filedate(sprintf("Arab_regions_msn_all_hosts"), ".pdf", "output/plots"), width = 10, height = 7)
