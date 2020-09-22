@@ -174,7 +174,7 @@ cal_z_score <- function(x){
 row_annotation <- glsub@strata  %>% select(id, State, Year) %>%  column_to_rownames("id") # mutate_all(~forcats::fct_drop(.)) %>%
 col_annotation <- glsub@strata  %>% select(id, Patho.Group) %>% column_to_rownames("id") # inner_join(mat_clusters) %>% 
 
-pc_colors <-  c("grey", brewer.pal(9, "RdYlGn")[round(seq(1,8, length.out = length(.)-1 ) ,0)]) %>% rev(.) %>%
+pc_colors <-  c("grey", brewer.pal(9, "RdYlGn")[round(seq(1,8, length.out = 9-1 ) ,0)]) %>% rev(.) %>%
   setNames(popNames(Arab_gclone))
 # specify colours
 paletteer_d("RColorBrewer::RdYlGn", direction = -1)
@@ -185,9 +185,10 @@ my_colours = list(
     setNames(c(as.character(paletteer_d("RColorBrewer::RdYlGn", direction = -1))[round(seq(4,11, length.out = length(.)-1 ) ,0)], "grey80"), .)
 )
 
-col_fun <- circlize::colorRamp2(0:3, paletteer_c("viridis::viridis", 4, direction = -1))
-Heatmap(as.matrix(dist_matrix), name = "Genetic Distance", show_row_names = FALSE, show_column_names = FALSE, 
-        col = col_fun)
+# define colour function fro ComplexHeatmap
+# col_fun <- circlize::colorRamp2(0:3, paletteer_c("viridis::viridis", 4, direction = -1))
+# Heatmap(as.matrix(dist_matrix), name = "Genetic Distance", show_row_names = FALSE, show_column_names = FALSE, 
+#         col = col_fun)
 
 
 dist_heatmap <- pheatmap(as.matrix(dist_matrix), show_rownames = FALSE, show_colnames = FALSE, 
@@ -228,21 +229,22 @@ pacman::p_load(lme4, lsmeans, ggpubr, ggthemr, gtools)
 
 # contingency table
 cont_table <- table(pathog_cluster$Virulence, pathog_cluster$Cluster)
-prop_table <- prop.table(table(pathog_cluster$Cluster, pathog_cluster$Virulence), margin = 1) %>% as.data.frame() %>% 
-  rename(Cluster=Var1, pathog_class=Var2) 
+prop_table <- prop.table(table(pathog_cluster$Cluster, pathog_cluster$Virulence), margin = 1) %>% 
+  as.data.frame() %>% rename(Cluster=Var1, pathog_class=Var2) %>% as_tibble() %>% 
+  mutate(pathog_class=factor(pathog_class, levels = c("Low", "High")))
 
 
 # save table
 prop_table %>% pivot_wider(names_from = pathog_class, values_from = Freq) %>%  
   mutate_if(is.double, ~scales::percent(., accuracy = .1)) %>% 
-  write_xlsx(., "output/A_rabiei_DArT_poppr.xlsx", sheet = "pathog_clusters", asTable=FALSE, overwritesheet = TRUE)
+  write_xlsx(., "output/A_rabiei_DArT_poppr.xlsx", sheet = "pathog_clusters2", asTable=FALSE, overwritesheet = TRUE)
 # chisq.test(table(patho_cluster$Virulence, patho_cluster$Cluster))
 
 
 # heatmap_clusters %>% mutate(value=1) %>% pivot_wider(names_from = Cluster, values_from = value, values_fill = list(value=0)) %>% 
 #   pivot_longer()
 # Cluster statistical analysis #####
-cluster_data <- pathog_cluster %>% mutate(Cluster=LETTERS[Cluster], Virulence=ifelse(Path_rating<high_path_thresh,0, 1)) 
+cluster_data <- pathog_cluster %>% mutate(Cluster=LETTERS[Cluster], Virulence=ifelse(Path_rating<high_path_thresh,0, 1)) %>% write_csv(here("data/cluster_data.csv"))
 data.glmer <- glmer(Virulence ~ Cluster + (1|id), family = binomial, data = cluster_data)
 lsm <- lsmeans(data.glmer, "Cluster", type = "response")
 signif_lsm <- pairs(lsm) %>% as.data.frame() %>% mutate(stars=stars.pval(p.value)) %>% 
@@ -252,21 +254,24 @@ lsm_mat[lower.tri(lsm_mat)] <- signif_lsm$odds.ratio
 pairs(regrid(lsm)) %>% as.data.frame() %>% mutate(stars=stars.pval(p.value)) %>% 
   write_xlsx(., "output/A_rabiei_DArT_poppr.xlsx", sheet = "pathogenicity_cluster_diff_stats", asTable=FALSE, overwritesheet = TRUE)
 # plot 
-ggthemr("pale", text_size = 16)
+ggthemr("pale", text_size = 18)
 # Stacked bar plots, add, based on paired ddelta
 ggplot(prop_table, aes(x=Cluster, y=Freq, fill=pathog_class)) +
   geom_bar(stat="identity", width=0.6) +
-  scale_fill_brewer(palette = "Set1") +
+  scale_fill_brewer(palette = "Set1", direction = -1) +
   labs(fill="Virulence\nClassification") +
-  annotate("text", x=levels(prop_table$Cluster), y = 1.05, label=c("ab", "ab", "c\n***", "bc\n*", "a", "ab"))
-ggsave("output/plots/A_rabiei_cluster_path_classification_bar.pdf", width = 7, height=5)
+  annotate("text", x=levels(prop_table$Cluster), y = 1.05, label=c("ab", "ab", "c", "bc", "a", "ab"))
+  # annotate("text", x=levels(prop_table$Cluster), y = 1.05, label=c("ab", "ab", "c\n***", "bc\n*", "a", "ab"))
+ggsave(here::here("output/plots/A_rabiei_cluster_path_classification_bar.pdf"), width = 7, height=5)
 
 # Stacked bar plots, based on odds-ratio
 ggplot(prop_table, aes(x=Cluster, y=Freq, fill=pathog_class)) +
   geom_bar(stat="identity", width=0.6) +
-  scale_fill_brewer(palette = "Set1") +
+  scale_fill_brewer(palette = "Set1", direction = -1) +
   labs(fill="Virulence\nClassification") +
-  annotate("text", x="C", y = 1.05, label='***')
+  geom_text(data = prop_table %>% filter(pathog_class == "High"), aes(label=scales::percent(Freq, accuracy = 3)), nudge_y = -0.05, colour="white", size=5) +
+  annotate("text", x=levels(prop_table$Cluster), y = 1.05, label=c("ab", "ab", "c", "bc", "a", "ab"), size=5)
+  # annotate("text", x="C", y = 1.05, label='***')
 ggsave("output/plots/A_rabiei_cluster_path_classification_OR_signif.pdf", width = 7, height=5)
 
 # visualise contingency table
