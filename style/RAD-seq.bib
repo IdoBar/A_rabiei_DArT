@@ -1,0 +1,333 @@
+@article{malinskyRADpainterFineRADstructurePopulation2017,
+  title = {{{RADpainter}} and {{fineRADstructure}}: Population Inference from {{RADseq}} Data},
+  author = {Malinsky, Milan and Trucchi, Emiliano and Lawson, Daniel and Falush, Daniel},
+  date = {2017-01-01},
+  journaltitle = {bioRxiv},
+  doi = {10.1101/057711},
+  url = {http://biorxiv.org/content/early/2017/12/22/057711.abstract},
+  abstract = {Powerful approaches to inferring recent or current population structure based on nearest neighbour haplotype coancestry have so far been inaccessible to users without high quality genome-wide haplotype data. With a boom in non-model organism genomics, there is a pressing need to bring these methods to communities without access to such data. Here we present RADpainter, a new program designed to infer the coancestry matrix from restriction-site-associated DNA sequencing (RADseq) data. We combine this program together with a previously published MCMC clustering algorithm into fineRADstructure - a complete, easy to use, and fast population inference package for RADseq data (https://github.com/millanek/fineRADstructure). Finally, with two example datasets, we illustrate its use, benefits, and robustness to missing RAD alleles in double digest RAD sequencing.}
+}
+
+@article{gruberDartRPackageFacilitate2018,
+  title = {{{dartR}}: {{An R}} Package to Facilitate Analysis of {{SNP}} Data Generated from Reduced Representation Genome Sequencing},
+  shorttitle = {Dartr},
+  author = {Gruber, Bernd and Unmack, Peter J. and Berry, Oliver F. and Georges, Arthur},
+  date = {2018-05},
+  journaltitle = {Molecular Ecology Resources},
+  shortjournal = {Mol Ecol Resour},
+  volume = {18},
+  pages = {691--699},
+  issn = {1755-0998},
+  doi = {10.1111/1755-0998.12745},
+  abstract = {Although vast technological advances have been made and genetic software packages are growing in number, it is not a trivial task to analyse SNP data. We announce a new r package, dartr, enabling the analysis of single nucleotide polymorphism data for population genomic and phylogenomic applications. dartr provides user-friendly functions for data quality control and marker selection, and permits rigorous evaluations of conformation to Hardy-Weinberg equilibrium, gametic-phase disequilibrium and neutrality. The package reports standard descriptive statistics, permits exploration of patterns in the data through principal components analysis and conducts standard F-statistics, as well as basic phylogenetic analyses, population assignment, isolation by distance and exports data to a variety of commonly used downstream applications (e.g., newhybrids, faststructure and phylogeny applications) outside of the r environment. The package serves two main purposes: first, a user-friendly approach to lower the hurdle to analyse such data-therefore, the package comes with a detailed tutorial targeted to the r beginner to allow data analysis without requiring deep knowledge of r. Second, we use a single, well-established format-genlight from the adegenet package-as input for all our functions to avoid data reformatting. By strictly using the genlight format, we hope to facilitate this format as the de facto standard of future software developments and hence reduce the format jungle of genetic data sets. The dartr package is available via the r CRAN network and GitHub.},
+  eprint = {29266847},
+  eprinttype = {pmid},
+  keywords = {Genetics; Population,next-generation sequencing,phylogenomics,Phylogeny,Polymorphism; Single Nucleotide,population genomics,r package,RADSeq,Sequence Analysis,SNPs,Software,Whole Genome Sequencing},
+  langid = {english},
+  number = {3}
+}
+
+@article{ihakaLanguageDataAnalysis1996,
+  title = {R: A Language for Data Analysis and Graphics},
+  shorttitle = {R},
+  author = {Ihaka, Ross and Gentleman, Robert},
+  date = {1996-09-01},
+  journaltitle = {Journal of Computational and Graphical Statistics},
+  volume = {5},
+  pages = {299-314},
+  issn = {1061-8600},
+  doi = {10.1080/10618600.1996.10474713},
+  url = {http://www.tandfonline.com/doi/abs/10.1080/10618600.1996.10474713},
+  urldate = {2015-04-26},
+  abstract = {In this article we discuss our experience designing and implementing a statistical computing language. In developing this new language, we sought to combine what we felt were useful features from two existing computer languages. We feel that the new language provides advantages in the areas of portability, computational efficiency, memory management, and scoping.},
+  annotation = {<p>doi: 10.1080/10618600.1996.10474713</p>},
+  number = {3}
+}
+
+@book{R_2017,
+  title = {R: {{A Language}} and {{Environment}} for {{Statistical Computing}}},
+  author = {{R Core Team}},
+  date = {2017},
+  location = {{Vienna, Austria}},
+  url = {https://www.R-project.org/},
+  organization = {R Foundation for Statistical Computing}
+}
+
+
+@article{glaubitz_tassel-gbs:_2014,
+	title = {{TASSEL}-{GBS}: A High Capacity Genotyping by Sequencing Analysis Pipeline},
+	volume = {9},
+	issn = {1932-6203},
+	url = {http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0090346},
+	doi = {10.1371/journal.pone.0090346},
+	shorttitle = {{TASSEL}-{GBS}},
+	abstract = {Genotyping by sequencing ({GBS}) is a next generation sequencing based method that takes advantage of reduced representation to enable high throughput genotyping of large numbers of individuals at a large number of {SNP} markers. The relatively straightforward, robust, and cost-effective {GBS} protocol is currently being applied in numerous species by a large number of researchers. Herein we describe a bioinformatics pipeline, tassel-gbs, designed for the efficient processing of raw {GBS} sequence data into {SNP} genotypes. The tassel-gbs pipeline successfully fulfills the following key design criteria: (1) Ability to run on the modest computing resources that are typically available to small breeding or ecological research programs, including desktop or laptop machines with only 8–16 {GB} of {RAM}, (2) Scalability from small to extremely large studies, where hundreds of thousands or even millions of {SNPs} can be scored in up to 100,000 individuals (e.g., for large breeding programs or genetic surveys), and (3) Applicability in an accelerated breeding context, requiring rapid turnover from tissue collection to genotypes. Although a reference genome is required, the pipeline can also be run with an unfinished “pseudo-reference” consisting of numerous contigs. We describe the tassel-gbs pipeline in detail and benchmark it based upon a large scale, species wide analysis in maize (Zea mays), where the average error rate was reduced to 0.0042 through application of population genetic-based {SNP} filters. Overall, the {GBS} assay and the tassel-gbs pipeline provide robust tools for studying genomic diversity.},
+	pages = {e90346},
+	number = {2},
+	journaltitle = {{PLOS} {ONE}},
+	shortjournal = {{PLOS} {ONE}},
+	author = {Glaubitz, Jeffrey C. and Casstevens, Terry M. and Lu, Fei and Harriman, James and Elshire, Robert J. and Sun, Qi and Buckler, Edward S.},
+	urldate = {2017-08-01},
+	date = {2014-02-28},
+	note = {00278},
+	keywords = {Sequence Alignment, population genetics, Variant genotypes, Plant genomics, Maize, Sequence tagged site analysis, Alleles, Pipelines (computing)},
+	file = {Full Text PDF:C\:\\Users\\s2978925\\Zotero\\storage\\WICPWQQ5\\Glaubitz et al. - 2014 - TASSEL-GBS A High Capacity Genotyping by Sequenci.pdf:application/pdf;PLoS Full Text PDF:C\:\\Users\\s2978925\\Zotero\\storage\\T7QV649H\\Glaubitz et al. - 2014 - TASSEL-GBS A High Capacity Genotyping by Sequenci.pdf:application/pdf;PubMed Central Full Text PDF:C\:\\Users\\s2978925\\Zotero\\storage\\BKQ4TJB4\\Glaubitz et al. - 2014 - TASSEL-GBS A High Capacity Genotyping by Sequenci.pdf:application/pdf;Snapshot:C\:\\Users\\s2978925\\Zotero\\storage\\CHEHU7QG\\article.pdf:application/pdf}
+}
+
+@article{gu_circlize_2014,
+	title = {circlize implements and enhances circular visualization in R},
+	volume = {30},
+	issn = {1367-4803},
+	url = {https://academic.oup.com/bioinformatics/article/30/19/2811/2422259},
+	doi = {10.1093/bioinformatics/btu393},
+	abstract = {Summary: Circular layout is an efficient way for the visualization of huge amounts of genomic information. Here we present the circlize package, which provides an implementation of circular layout generation in R as well as an enhancement of available software. The flexibility of this package is based on the usage of low-level graphics functions such that self-defined high-level graphics can be easily implemented by users for specific purposes. Together with the seamless connection between the powerful computational and visual environment in R, circlize gives users more convenience and freedom to design figures for better understanding genomic patterns behind multi-dimensional data. Availability and implementation:circlize is available at the Comprehensive R Archive Network ({CRAN}): http://cran.r-project.org/web/packages/circlize/Contact:b.brors@dkfz.{deSupplementary} information:Supplementary data are available at Bioinformatics online.},
+	pages = {2811--2812},
+	number = {19},
+	journaltitle = {Bioinformatics},
+	shortjournal = {Bioinformatics},
+	author = {Gu, Zuguang and Gu, Lei and Eils, Roland and Schlesner, Matthias and Brors, Benedikt},
+	urldate = {2018-02-15},
+	date = {2014-10-01},
+	langid = {english},
+	file = {Full Text PDF:C\:\\Users\\s2978925\\Zotero\\storage\\QNMCMLZ3\\Gu et al. - 2014 - circlize implements and enhances circular visualiz.pdf:application/pdf;Snapshot:C\:\\Users\\s2978925\\Zotero\\storage\\BGPZ752M\\2422259.html:text/html}
+}
+
+@article{money_linkimputer:_2017,
+  title = {{{LinkImputeR}}: User-Guided Genotype Calling and Imputation for Non-Model Organisms},
+  volume = {18},
+  issn = {1471-2164},
+  url = {http://www.ncbi.nlm.nih.gov/pmc/articles/PMC5504746/},
+  doi = {10.1186/s12864-017-3873-5},
+  shorttitle = {{{LinkImputeR}}},
+  abstract = {Background
+Genomic studies such as genome-wide association and genomic selection require genome-wide genotype data. All existing technologies used to create these data result in missing genotypes, which are often then inferred using genotype imputation software. However, existing imputation methods most often make use only of genotypes that are successfully inferred after having passed a certain read depth threshold. Because of this, any read information for genotypes that did not pass the threshold, and were thus set to missing, is ignored. Most genomic studies also choose read depth thresholds and quality filters without investigating their effects on the size and quality of the resulting genotype data. Moreover, almost all genotype imputation methods require ordered markers and are therefore of limited utility in non-model organisms.
+
+Results
+Here we introduce LinkImputeR, a software program that exploits the read count information that is normally ignored, and makes use of all available DNA sequence information for the purposes of genotype calling and imputation. It is specifically designed for non-model organisms since it requires neither ordered markers nor a reference panel of genotypes. Using next-generation DNA sequence (NGS) data from apple, cannabis and grape, we quantify the effect of varying read count and missingness thresholds on the quantity and quality of genotypes generated from LinkImputeR. We demonstrate that LinkImputeR can increase the number of genotype calls by more than an order of magnitude, can improve genotyping accuracy by several percent and can thus improve the power of downstream analyses. Moreover, we show that the effects of quality and read depth filters can differ substantially between data sets and should therefore be investigated on a per-study basis.
+
+Conclusions
+By exploiting DNA sequence data that is normally ignored during genotype calling and imputation, LinkImputeR can significantly improve both the quantity and quality of genotype data generated from NGS technologies. It enables the user to quickly and easily examine the effects of varying thresholds and filters on the number and quality of the resulting genotype calls. In this manner, users can decide on thresholds that are most suitable for their purposes. We show that LinkImputeR can significantly augment the value and utility of NGS data sets, especially in non-model organisms with poor genomic resources.
+
+Electronic supplementary material
+The online version of this article (doi:10.1186/s12864-017-3873-5) contains supplementary material, which is available to authorized users.},
+  timestamp = {2017-07-31T02:29:55Z},
+  journaltitle = {BMC Genomics},
+  shortjournal = {BMC Genomics},
+  author = {Money, Daniel and Migicovsky, Zoë and Gardner, Kyle and Myles, Sean},
+  urldate = {2017-07-31},
+  date = {2017-07-10},
+  eprinttype = {pmid},
+  eprint = {28693460},
+  pmcid = {PMC5504746}
+}
+
+
+@article{money_linkimpute:_2015,
+	title = {{LinkImpute}: Fast and Accurate Genotype Imputation for Nonmodel Organisms},
+	volume = {5},
+	issn = {2160-1836},
+	url = {http://www.ncbi.nlm.nih.gov/pmc/articles/PMC4632058/},
+	doi = {10.1534/g3.115.021667},
+	shorttitle = {{LinkImpute}},
+	abstract = {Obtaining genome-wide genotype data from a set of individuals is the first step in many genomic studies, including genome-wide association and genomic selection. All genotyping methods suffer from some level of missing data, and genotype imputation can be used to fill in the missing data and improve the power of downstream analyses. Model organisms like human and cattle benefit from high-quality reference genomes and panels of reference genotypes that aid in imputation accuracy. In nonmodel organisms, however, genetic and physical maps often are either of poor quality or are completely absent, and there are no panels of reference genotypes available. There is therefore a need for imputation methods designed specifically for nonmodel organisms in which genomic resources are poorly developed and marker order is unreliable or unknown. Here we introduce {LinkImpute}, a software package based on a k-nearest neighbor genotype imputation method, {LD}-{kNNi}, which is designed for unordered markers. No physical or genetic maps are required, and it is designed to work on unphased genotype data from heterozygous species. It exploits the fact that markers useful for imputation often are not physically close to the missing genotype but rather distributed throughout the genome. Using genotyping-by-sequencing data from diverse and heterozygous accessions of apples, grapes, and maize, we compare {LD}-{kNNi} with several genotype imputation methods and show that {LD}-{kNNi} is fast, comparable in accuracy to the best-existing methods, and exhibits the least bias in allele frequency estimates.},
+	pages = {2383--2390},
+	number = {11},
+	journaltitle = {G3: Genes{\textbar}Genomes{\textbar}Genetics},
+	shortjournal = {G3 (Bethesda)},
+	author = {Money, Daniel and Gardner, Kyle and Migicovsky, Zoë and Schwaninger, Heidi and Zhong, Gan-Yuan and Myles, Sean},
+	urldate = {2017-07-31},
+	date = {2015-09-15},
+	pmid = {26377960},
+	pmcid = {PMC4632058},
+	note = {00029 },
+	file = {PubMed Central Full Text PDF:C\:\\Users\\s2978925\\Zotero\\storage\\IEEP6XJX\\Money et al. - 2015 - LinkImpute Fast and Accurate Genotype Imputation .pdf:application/pdf}
+}
+
+
+@article{bushnell_bbmap:_2014,
+	title = {{BBMap}: A Fast, Accurate, Splice-Aware Aligner},
+	url = {https://pubarchive.lbl.gov/islandora/object/ir%3A1005301/},
+	shorttitle = {{BBMap}},
+	author = {Bushnell, Brian},
+	urldate = {2017-11-23},
+	date = {2014},
+	file = {Full Text PDF:C\:\\Users\\s2978925\\Zotero\\storage\\M5N49MIK\\Bushnell - 2014 - BBMap A Fast, Accurate, Splice-Aware Aligner.pdf:application/pdf;Snapshot:C\:\\Users\\s2978925\\Zotero\\storage\\JUS7HHEG\\ir1005301.html:text/html}
+}
+
+@article{garrison_haplotype-based_2012,
+  title = {Haplotype-Based Variant Detection from Short-Read Sequencing},
+  shorttitle = {Haplotype-Based Variant Detection from Short-Read Sequencing},
+  timestamp = {2016-01-10T13:39:31Z},
+  journaltitle = {arXiv preprint arXiv:1207.3907},
+  author = {Garrison, Erik and Marth, Gabor},
+  date = {2012}
+}
+
+@article{lawrence_software_2013,
+  title = {Software for {{Computing}} and {{Annotating Genomic Ranges}}},
+  volume = {9},
+  url = {http://www.ploscompbiol.org/article/info%3Adoi%2F10.1371%2Fjournal.pcbi.1003118},
+  doi = {10.1371/journal.pcbi.1003118},
+  timestamp = {2016-11-04T03:48:43Z},
+  number = {8},
+  journaltitle = {PLoS Computational Biology},
+  author = {Lawrence, Michael and Huber, Wolfgang and Pagès, Hervé and Aboyoun, Patrick and Carlson, Marc and Gentleman, Robert and Morgan, Martin and Carey, Vincent},
+  date = {2013}
+}
+
+
+@article{obenchain_variantannotation:_2014,
+  title = {{{VariantAnnotation}}: A {{Bioconductor}} Package for Exploration and Annotation of Genetic Variants},
+  volume = {30},
+  issn = {1367-4803},
+  url = {http://www.ncbi.nlm.nih.gov/pmc/articles/PMC4080743/},
+  doi = {10.1093/bioinformatics/btu168},
+  shorttitle = {{{VariantAnnotation}}},
+  abstract = {Summary:
+VariantAnnotation is an R / Bioconductor
+package for the exploration and annotation of genetic variants. Capabilities exist for
+reading, writing and filtering variant call format (VCF) files.
+VariantAnnotation allows ready access to additional R
+/ Bioconductor facilities for advanced statistical analysis, data
+transformation, visualization and integration with diverse genomic resources., Availability and implementation: This package is implemented in R and
+available for download at the Bioconductor Web site (http://bioconductor.org/packages/2.13/bioc/html/VariantAnnotation.html).
+The package contains extensive help pages for individual functions and a
+‘vignette’ outlining typical work flows; it is made available under the open
+source ‘Artistic-2.0’ license. Version 1.9.38 was used in this article., 
+Contact:
+vobencha@fhcrc.org},
+  timestamp = {2017-08-28T00:58:48Z},
+  number = {14},
+  journaltitle = Bioinformatics,
+  author = {Obenchain, Valerie and Lawrence, Michael and Carey, Vincent and Gogarten, Stephanie and Shannon, Paul and Morgan, Martin},
+  urldate = {2017-08-28},
+  date = {2014-07-15},
+  pages = {2076--2078},
+  eprinttype = {pmid},
+  eprint = {24681907},
+  pmcid = {PMC4080743}
+}
+
+
+
+@article{ruden_using_2012,
+  title = {Using {{{\emph{Drosophila}}}}{\emph{ Melanogaster}} as a Model for Genotoxic Chemical Mutational Studies with a New Program, {{SnpSift}}},
+  volume = {3},
+  url = {http://journal.frontiersin.org/article/10.3389/fgene.2012.00035/full},
+  doi = {10.3389/fgene.2012.00035},
+  abstract = {This paper describes a new program SnpSift for filtering differential DNA sequence variants between two or more experimental genomes after genotoxic chemical exposure. Here, we illustrate how SnpSift can be used to identify candidate phenotype-relevant variants including single nucleotide polymorphisms, multiple nucleotide polymorphisms, insertions, and deletions (InDels) in mutant strains isolated from genome-wide chemical mutagenesis of Drosophila melanogaster. First, the genomes of two independently isolated mutant fly strains that are allelic for a novel recessive male-sterile locus generated by genotoxic chemical exposure were sequenced using the Illumina next-generation DNA sequencer to obtain 20- to 29-fold coverage of the euchromatic sequences. The sequencing reads were processed and variants were called using standard bioinformatic tools. Next, SnpEff was used to annotate all sequence variants and their potential mutational effects on associated genes. Then, SnpSift was used to filter and select differential variants that potentially disrupt a common gene in the two allelic mutant strains. The potential causative DNA lesions were partially validated by capillary sequencing of polymerase chain reaction-amplified DNA in the genetic interval as defined by meiotic mapping and deletions that remove defined regions of the chromosome. Of the five candidate genes located in the genetic interval, the Pka-like gene CG12069 was found to carry a separate pre-mature stop codon mutation in each of the two allelic mutants whereas the other four candidate genes within the interval have wild-type sequences. The Pka-like gene is therefore a strong candidate gene for the male-sterile locus. These results demonstrate that combining SnpEff and SnpSift can expedite the identification of candidate phenotype-causative mutations in chemically mutagenized Drosophila strains. This technique can also be used to characterize the variety of mutations generated by genotoxic chemicals.},
+  timestamp = {2017-08-15T01:06:07Z},
+  journaltitle = Toxicogenomics,
+  author = {Ruden, Douglas Mark and Cingolani, Pablo and Patel, Viral M. and Coon, Melissa and Nguyen, Tung and Land, Susan J. and Lu, Xiangyi},
+  urldate = {2016-11-04},
+  date = {2012},
+  pages = {35},
+  keywords = {Drosophila melanogaster,next-generation DNA sequencing,personal genomes,whole-genome SNP analysis}
+}
+
+
+
+
+@article{karssen_genabel_2016,
+  title = {The {{GenABEL Project}} for Statistical Genomics},
+  volume = {5},
+  issn = {2046-1402},
+  url = {http://f1000research.com/articles/5-914/v1},
+  doi = {10.12688/f1000research.8733.1},
+  timestamp = {2017-08-28T00:13:44Z},
+  langid = {english},
+  journaltitle = F1000Research,
+  author = {Karssen, Lennart C. and van Duijn, Cornelia M. and Aulchenko, Yurii S.},
+  urldate = {2017-08-28},
+  date = {2016-05-19},
+  pages = {914},
+  options = {useprefix=true}
+}
+
+
+@article{aulchenko_genabel:_2007,
+  title = {{{GenABEL}}: An {{R}} Library for Genome-Wide Association Analysis},
+  volume = {23},
+  issn = {1367-4811},
+  doi = {10.1093/bioinformatics/btm108},
+  shorttitle = {{{GenABEL}}},
+  abstract = {Here we describe an R library for genome-wide association (GWA) analysis. It implements effective storage and handling of GWA data, fast procedures for genetic data quality control, testing of association of single nucleotide polymorphisms with binary or quantitative traits, visualization of results and also provides easy interfaces to standard statistical and graphical procedures implemented in base R and special R libraries for genetic analysis. We evaluated GenABEL using one simulated and two real data sets. We conclude that GenABEL enables the analysis of GWA data on desktop computers.
+AVAILABILITY: http://cran.r-project.org.},
+  timestamp = {2017-08-28T00:32:04Z},
+  langid = {english},
+  number = {10},
+  journaltitle = {Bioinformatics (Oxford, England)},
+  shortjournal = Bioinformatics,
+  author = {Aulchenko, Yurii S. and Ripke, Stephan and Isaacs, Aaron and van Duijn, Cornelia M.},
+  date = {2007-05-15},
+  pages = {1294--1296},
+  keywords = {Computational biology,Computer Simulation,Gene Library,Genome,Genome; Human,Haplotypes,Humans,Information Storage and Retrieval,Oligonucleotide Array Sequence Analysis,Polymorphism; Single Nucleotide,Software},
+  options = {useprefix=true},
+  eprinttype = {pmid},
+  eprint = {17384015}
+}
+
+
+
+@article{gonzalez_snpassoc:_2007,
+  title = {{{SNPassoc}}: An {{R}} Package to Perform Whole Genome Association Studies},
+  volume = {23},
+  issn = {1367-4811},
+  doi = {10.1093/bioinformatics/btm025},
+  shorttitle = {{{SNPassoc}}},
+  abstract = {The popularization of large-scale genotyping projects has led to the widespread adoption of genetic association studies as the tool of choice in the search for single nucleotide polymorphisms (SNPs) underlying susceptibility to complex diseases. Although the analysis of individual SNPs is a relatively trivial task, when the number is large and multiple genetic models need to be explored it becomes necessary a tool to automate the analyses. In order to address this issue, we developed SNPassoc, an R package to carry out most common analyses in whole genome association studies. These analyses include descriptive statistics and exploratory analysis of missing values, calculation of Hardy-Weinberg equilibrium, analysis of association based on generalized linear models (either for quantitative or binary traits), and analysis of multiple SNPs (haplotype and epistasis analysis).
+AVAILABILITY: Package SNPassoc is available at CRAN from http://cran.r-project.org.
+SUPPLEMENTARY INFORMATION: A tutorial is available on Bioinformatics online and in http://davinci.crg.es/estivill\_lab/snpassoc.},
+  timestamp = {2016-11-04T05:44:33Z},
+  langid = {english},
+  number = {5},
+  journaltitle = {Bioinformatics (Oxford, England)},
+  shortjournal = Bioinformatics,
+  author = {González, Juan R. and Armengol, Lluís and Solé, Xavier and Guinó, Elisabet and Mercader, Josep M. and Estivill, Xavier and Moreno, Víctor},
+  date = {2007-03-01},
+  pages = {644--645},
+  keywords = {Databases; Genetic,Genomics,Haplotypes,Linear Models,Polymorphism; Single Nucleotide,Software},
+  eprinttype = {pmid},
+  eprint = {17267436}
+}
+
+@article{lawsonInferencePopulationStructure2012,
+  title = {Inference of {{Population Structure}} Using {{Dense Haplotype Data}}},
+  author = {Lawson, Daniel John and Hellenthal, Garrett and Myers, Simon and Falush, Daniel},
+  date = {2012-01-26},
+  journaltitle = {PLOS Genetics},
+  shortjournal = {PLOS Genetics},
+  volume = {8},
+  pages = {e1002453},
+  publisher = {{Public Library of Science}},
+  issn = {1553-7404},
+  doi = {10.1371/journal.pgen.1002453},
+  url = {https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1002453},
+  urldate = {2020-03-12},
+  abstract = {The advent of genome-wide dense variation data provides an opportunity to investigate ancestry in unprecedented detail, but presents new statistical challenges. We propose a novel inference framework that aims to efficiently capture information on population structure provided by patterns of haplotype similarity. Each individual in a sample is considered in turn as a recipient, whose chromosomes are reconstructed using chunks of DNA donated by the other individuals. Results of this “chromosome painting” can be summarized as a “coancestry matrix,” which directly reveals key information about ancestral relationships among individuals. If markers are viewed as independent, we show that this matrix almost completely captures the information used by both standard Principal Components Analysis (PCA) and model-based approaches such as STRUCTURE in a unified manner. Furthermore, when markers are in linkage disequilibrium, the matrix combines information across successive markers to increase the ability to discern fine-scale population structure using PCA. In parallel, we have developed an efficient model-based approach to identify discrete populations using this matrix, which offers advantages over PCA in terms of interpretability and over existing clustering algorithms in terms of speed, number of separable populations, and sensitivity to subtle population structure. We analyse Human Genome Diversity Panel data for 938 individuals and 641,000 markers, and we identify 226 populations reflecting differences on continental, regional, local, and family scales. We present multiple lines of evidence that, while many methods capture similar information among strongly differentiated groups, more subtle population structure in human populations is consistently present at a much finer level than currently available geographic labels and is only captured by the haplotype-based approach. The software used for this article, ChromoPainter and fineSTRUCTURE, is available from http://www.paintmychromosomes.com/.},
+  keywords = {Algorithms,Europe,Genetic loci,Haplotypes,Phylogenetic analysis,Population genetics,Principal component analysis,Simulation and modeling},
+  langid = {english},
+  number = {1}
+}
+
+
+@article{jombartAdegenet31New2011,
+  title = {Adegenet 1.3-1: New Tools for the Analysis of Genome-Wide {{SNP}} Data},
+  author = {Jombart, T. and Ahmed, I.},
+  date = {2011},
+  journaltitle = {Bioinformatics},
+  doi = {10.1093/bioinformatics/btr521}
+}
+
+@article{jombartAdegenetPackageMultivariate2008,
+  title = {Adegenet: A {{R}} Package for the Multivariate Analysis of Genetic Markers},
+  author = {Jombart, T.},
+  date = {2008},
+  journaltitle = {Bioinformatics},
+  volume = {24},
+  pages = {1403--1405},
+  doi = {10.1093/bioinformatics/btn129}
+}
+
+
+
