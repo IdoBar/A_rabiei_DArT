@@ -59,7 +59,7 @@ tbls(name="mapping_sum", "Mapping statistics.")
 ```
 
 # Experimental Design
-DNA was extracted from 279 isolates of Australian _Ascochyta rabiei_ and 2 Spanish _A. rabiei_ isolates and sent for DArT-Sequencing at Diversity Array Technologies (DArT, Canberra) on a single Illumina NovaSeq flowcell, producing 150 bp short paired-end reads (run name CAGRF20074).  
+DNA was extracted from 279 isolates of Australian _Ascochyta rabiei_ and 2 _A. rabiei_ isolates from the ICARDA collection. The DNA was sent for DArT-Sequencing at Diversity Array Technologies (DArT, Canberra).  
 A summary of the Australian isolates used for DArT sequencing across the years and regions (state) is provided below (`r tbls(name="sum_table",display="cite")`).  
 Additional details of the sequenced isolates is provided in `r appdx(name="samples",display="cite")`.
 
@@ -90,24 +90,27 @@ kable(isolate_summary) %>%
 ### General overview:
 1. Read in Data (after cross-validation of sample names in input files)
 2. Data filtration:
-    a. Filter by repeatability (`gl.filter.repavg()` in dartR) - a meassurement of quality per locus
+    a. Filter by repeatability (`gl.filter.reproducibility()` in dartR) - a meassurement of quality per locus
     b. Filter by monomorphic loci (`gl.filter.monomorphs()`) as they do not provide information for population structure and simply slow the analysis
-    c. Filter by amount of missing data (`gl.filter.callrate(method="loc")`) per locus
+    c. Filter by amount of missing data (`gl.filter.callrate(method="loc")`) per locus  
     d. Filter to remove all but one of multiple snps in the same fragment (`gl.filter.secondaries()`) - not needed for _fineradstructure_ analysis  
-    e. Filter individuals by amount of missing data (`gl.filter.callrate(method="ind")`)
-3. Perform population structure analysis using Poppr, StrataG, StockR or external tool such as ADMIXTURE/STRUCTURE (and their deriviatives)
-  a. Calculate genetic distance  
-  b. Create Tree for dendrogram  
-  c. DAPC/PCA analysis
+    e. Filter individuals by amount of missing data (`gl.filter.callrate(method="ind")`)  
+3. Perform population structure analysis using Poppr, StrataG, StockR or external tool such as ADMIXTURE/STRUCTURE (and their deriviatives)  
+  a. Calculate genetic distances   
+  b. Assess clonality  
+  c. DAPC/PCA analysis  
 
 ### Plots:
-1. Dendrogram with all samples (including Spain) - use `pheatmap` to label Year and State of collection
-2. DAPC/PCA of Australian isolates, colour by State/Year/Host/Pathogenicity
+1. Population-level Neighbor-Joining phylogenetic tree based on Euclidean distances (including ICARDA samples)  
+2. DAPC/PCA of populations, colour by Origin  
+3. MSN diagrams of Australian isolates, colour by State/Pathogenicity  
+4. Heatmap and dendrogram of Australian samples - use `pheatmap` to label Pathogenicity, Year and State of collection   
+
 
 
 ### Methods
-DArT-Seq data processing, mapping and variant calling were performed on the _Griffith University Gowonda HPC Cluster_ (using Torque PBS scheduler) and the [EcoCloud](https://app.ecocloud.org.au/) cloud-based analysis platform.  
-Detailed methods, including code for running each of the analysis steps are provided in the associated [A_rabiei_DArT GitHub repository](https://github.com/IdoBar/Botrytis_cinerea_probe_alignment).
+DArT-Seq data processing, mapping and variant calling were performed on the _Griffith University Gowonda HPC Cluster_ (using Torque PBS scheduler).  
+Detailed methods, including code for running each of the analysis steps are provided in the associated [A_rabiei_DArT GitHub repository](https://github.com/IdoBar/A_rabiei_DArT).
 
 #### Environment setup
 Install needed software in a `conda` environment on a Linux machine (GU's Gowonda HPC cluster or [EcoCloud](https://app.ecocloud.org.au/) in this case).

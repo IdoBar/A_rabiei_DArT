@@ -1,14 +1,16 @@
 # load custom functions from github
 devtools::source_gist("7f63547158ecdbacf31b54a58af0d1cc", filename = "util.R")
+source("https://raw.githubusercontent.com/koundy/ggplot_theme_Publication/master/ggplot_theme_Publication-2.R")
 
 # install dependencies
 # BiocManager::install(c("SNPRelate", "qvalue"))
 # install.packages(c("backports", "colorspace", "adegenet"))
 # load packages we're going to use
 # BiocManager::install("qvalue", update = FALSE)
-pacman::p_load(  tidyverse, forcats, RColorBrewer, paletteer, ggrepel, glue, dartR, poppr, SNPassoc, here,
+pacman::p_load(  tidyverse, forcats, RColorBrewer, paletteer, ggrepel, glue, dartR, poppr, SNPassoc, here, showtext, ggthemr,ggtree, 
                  dendextend, ComplexHeatmap, pheatmap) # quadprog, raster, mvtnorm,pheatmap
-
+#extrafont::font_import()
+ggthemr::ggthemr("pale", text_size = 18)
 #### Read DArT Data ####
 pheno_file <- recent_file("data", "A_rabiei_pathotypes.+.xlsx")
 isolate_table <- readxl::read_excel(path = pheno_file , sheet = "pathotyping") %>% #select(-one_of(c("Location"))) %>% 
@@ -35,6 +37,7 @@ ssr_haplos <- readxl::read_excel("data/5_year_complete_SSR_db.xlsx")
 
 # gl1_2 <- gl.read.dart("data/Report_DAsc19-4108_ArabieiPlates1-2/Report_DAsc19-4108_1_moreOrders_SNP_mapping_2.csv") 
 gl3 <- gl.read.dart("data/Report-DAsc19-4353_ArabieiPlate3/Report_DAsc19-4353_1_moreOrders_SNP_mapping_2.csv")
+gl3 <- gl.read.dart("data/Report-DAsc19-4353_ArabieiPlate3/Report_DAsc19-4353_1_moreOrders_SNP_2.csv")
 
 # fix replaced names
 replace_names <- c("122/17-1"= "122-1/17","122/17-2"="122-2/17","122/17-3"="122-3/17","14HOR15"="14HOR015",
@@ -67,12 +70,12 @@ metadata %>% filter(is.na(Region))
 
 metadata <- metadata %>% 
   select(id=indNames, Location, State, Region, Year, Host, Pathotype, Path_rating, Haplotype)  %>% 
-  write_csv("data/DArT_metadata.csv")
+  write_csv("data/DArT_metadata2.csv")
 
 # metadata <- read_csv(here("data/DArT_metadata.csv"))
 # double check matching names and length
 length(indNames(gl3)) == nrow(metadata)
-all(indNames(gl3) == metadata$indNames)
+all(indNames(gl3) == metadata$id)
 
 # check how many isolate names don't appear in the pathotype table
 metadata %>% filter(!Taxa %in% isolate_table$Taxa) %>% .[c("indNames", "Taxa")]
@@ -81,8 +84,8 @@ metadata %>% filter(!Taxa %in% isolate_table$Taxa) %>% .[c("indNames", "Taxa")]
 metadata %>% filter(is.na(Haplotype)) %>% count(Year)
 
 # read in data with metadata in place
-Arab_gl <- gl.read.dart("data/Report-DAsc19-4353_ArabieiPlate3/Report_DAsc19-4353_1_moreOrders_SNP_mapping_2.csv", 
-                        ind.metafile = "data/DArT_metadata.csv")
+Arab_gl <- gl.read.dart("data/Report-DAsc19-4353_ArabieiPlate3/Report_DAsc19-4353_1_moreOrders_SNP_2.csv", 
+                        ind.metafile = "data/DArT_metadata2.csv")
 
 sum_table <- read_csv("data/DArT_metadata.csv") %>% filter(State!="SPAIN") %>% count(Year, State) %>% 
   pivot_wider(names_from = State, values_from = n) %>% mutate_all(~replace_na(., 0)) %>% 
@@ -103,7 +106,7 @@ strata_factors <- Arab_gl@other$ind.metrics %>%
 
 strata_factors %>% count(Host)
 #### Exploratory Data Analysis ####
-ploidy(Arab_gl) <- 1
+# ploidy(Arab_gl) <- 1
 gl.report.monomorphs(Arab_gl)  # all loci are polymorphic
 # check missing rates
 gl.report.callrate(Arab_gl, method = "loc", v=3)
@@ -113,8 +116,9 @@ gl.report.repavg(Arab_gl)
 # check multiple loci per tag and reproducibility
 gl.report.secondaries(Arab_gl)
 
-Arab_gl@strata <- strata_factors
-setPop(Arab_gl) <- ~State
+Arab_gl@strata <- strata_factors %>% 
+  mutate(Origin=fct_recode(State, ICARDA = "SPAIN"))
+setPop(Arab_gl) <- ~Origin
 # apply filters for export
 # find loci with high number of SNPs
 snps_in_tag_thres <- 5
@@ -123,6 +127,22 @@ drop_loci <- Arab_gl@other$loc.metrics %>% count(CloneID) %>% filter(n>=snps_in_
 
 drop_snps <- locNames(Arab_gl)[sub("^(\\d+)-.+", "\\1", locNames(Arab_gl)) %in% drop_loci$CloneID]
 # remove Spain samples and loci with more than 5 SNPs
+# Entire population and Spain analysis ####
+missing_thres <- 0.2
+
+glsub <- Arab_gl %>% 
+  gl.filter.reproducibility(., threshold = 0.95, v = 3) %>% 
+  gl.filter.callrate(., method = "loc", threshold = (1-missing_thres), v = 3, mono.rm = TRUE) %>% gl.recalc.metrics() %>% 
+  gl.filter.callrate(., method = "ind", threshold = (1-missing_thres), recalc = TRUE, v = 3, mono.rm = TRUE)  %>%  gl.recalc.metrics() %>% 
+  gl.filter.callrate(., method = "loc", threshold = (1-missing_thres), v = 3, mono.rm = TRUE)
+
+# ploidy(glsub) <- 1
+glsub_strata <- strata_factors %>% 
+  mutate(Origin=fct_recode(State, ICARDA = "SPAIN")) %>% 
+  filter(id %in% indNames(glsub)) %>% mutate_if(is.factor, ~fct_drop(.))
+glsub@strata <- glsub_strata
+
+
 # Arab_filt <- Arab_gl[!grepl("spain", indNames(Arab_gl), ignore.case = TRUE),
 #                       sub("^(\\d+)-.+", "\\1", locNames(Arab_gl)) %in% keep_loci$CloneID, treatOther=TRUE] %>% 
 #             gl.filter.monomorphs(v = 3) 
@@ -157,21 +177,27 @@ amova.cc.test
 # Pathogenicity
 
 # Calculate Tree, heatmap and clusters ####
-tree <- aboot(glsub, tree = "upgma", distance = "bitwise.dist", sample = 100, showtree = T, 
+
+Arab_dist <- gl.dist.pop(glsub)
+tree <- aboot(glsub, tree = "upgma", distance = "bitwise.dist", sample = 100, 
+              showtree = T, rroot = T, 
               cutoff = 50, quiet = T,
               missing="ignore")
+
 dist_matrix <- bitwise.dist(glsub, euclidean = TRUE)
 # define clusters
 my_hclust <- hclust(dist_matrix, method = "average")
+
 cluster_num <- 6
 mat_clusters <- cutree(tree = as.dendrogram(my_hclust), k = cluster_num) %>% tibble(id=names(.), Cluster=.)
 cal_z_score <- function(x){
   (x - mean(x)) / sd(x)
 }
 
+
 # data_norm <- t(apply(dist_matrix, 1, cal_z_score))
 # specify annotation for columns and rows
-row_annotation <- glsub@strata  %>% select(id, State, Year) %>%  column_to_rownames("id") # mutate_all(~forcats::fct_drop(.)) %>%
+row_annotation <- glsub@strata  %>% select(id, Origin) %>%  column_to_rownames("id") # Year mutate_all(~forcats::fct_drop(.)) %>%
 col_annotation <- glsub@strata  %>% select(id, Patho.Group) %>% column_to_rownames("id") # inner_join(mat_clusters) %>% 
 
 pc_colors <-  c("grey", brewer.pal(9, "RdYlGn")[round(seq(1,8, length.out = 9-1 ) ,0)]) %>% rev(.) %>%
@@ -179,13 +205,63 @@ pc_colors <-  c("grey", brewer.pal(9, "RdYlGn")[round(seq(1,8, length.out = 9-1 
 # specify colours
 paletteer_d("RColorBrewer::RdYlGn", direction = -1)
 my_colours = list(
-  State = levels(row_annotation$State) %>% setNames(as.character(paletteer_d("RColorBrewer::Set1", length(.))), .),
-  Year = levels(row_annotation$Year) %>% setNames(as.character(paletteer_d("ggsci::default_uchicago", length(.))), .),
-  Patho.Group = levels(col_annotation$Patho.Group) %>% 
+  State = levels(glsub@strata$State) %>% setNames(as.character(paletteer_d("RColorBrewer::Set1", length(.))), .),
+  Origin = levels(glsub@strata$Origin) %>% setNames(as.character(paletteer_d("RColorBrewer::Set1", length(.)+1)[-6]), .),
+  # Year = levels(glsub@strata$Year) %>% setNames(as.character(paletteer_d("ggsci::default_uchicago", length(.))), .),
+  Patho.Group = levels(glsub@strata$Patho.Group) %>% 
     setNames(c(as.character(paletteer_d("RColorBrewer::RdYlGn", direction = -1))[round(seq(4,11, length.out = length(.)-1 ) ,0)], "grey80"), .)
 )
 
-# define colour function fro ComplexHeatmap
+# save NJ tree to file
+setPop(glsub) <- ~Origin
+gl.report.diversity(glsub)
+ICARDA_samples <- glsub@strata %>% filter(Origin=="ICARDA") %>% .$id
+glsub.nj <- gl.tree.nj(glsub, outgroup = "ICARDA" , labelsize = 0.8,
+                       treefile = "output/A_rabiei_pop_NJ.tree")
+bp <- ape::boot.phylo(glsub.nj, glsub, function(x) gl.tree.nj(x, outgroup = ICARDA_samples[1]))
+# edge.color, edge.width, edge.lty
+
+tidy_nj <- as_tibble(glsub.nj) %>% mutate(id=str_trim(label)) %>% left_join(glsub_strata) %>% 
+  mutate(color=ifelse(Origin=="ICARDA", "red", "black"), width=ifelse(Origin=="ICARDA", 2, 1), lty=ifelse(Origin=="ICARDA", 2, 1))
+ape::plot.phylo(glsub.nj, show.tip.label=FALSE, type="phylogram", use.edge.length=TRUE, root.edge = TRUE, edge.color=tidy_nj$color, 
+                edge.width=tidy_nj$width, edge.lty=tidy_nj$lty)
+
+p.nj <- ggtree(glsub.nj, layout = "rectangular") + geom_tiplab() # + geom_treescale() 
+
+p.nj + coord_cartesian(clip = 'off') + 
+  theme_tree2(plot.margin=margin(6, 80, 6, 6))
+  # hexpand(.2, direction = 1)
+ggsave("output/plots/A_rabiei_pop_NJ_tree.pdf", width=7, height=5)
+
+# Plot Dendogram ####
+ggtree(glsub.nj, layout="daylight", branch.length = 'none')
+
+tidy_tree <- as_tibble(tree) %>% left_join(glsub_strata, by = c("label"="id"))
+branch.length <-  tidy_tree %>% filter(Origin!="ICARDA") %>% .$branch.length
+tidy_tree %>% filter(Origin=="ICARDA")
+
+m <- MRCA(tree, c(62,63))
+y <- groupClade(tree, m)
+p <- ggtree(y, aes(linetype = group)) + 
+  # geom_tiplab(size = 2) +
+  theme(legend.position = 'none')
+p$data[p$data$node %in% c(62, 63), "x"] <- mean(p$data[!p$data$node %in% c(62, 63), "x"])
+p
+plot_grid(p1, p, ncol=2)
+ggtree(tree)
+
+
+dend <- my_hclust %>% as.dendrogram
+origin_bars <- my_colours$Origin[glsub@strata$Origin[match(labels(dend), as.character(glsub@strata$id))]] 
+
+# Plot it:
+pdf(file=filedate(glue("A_rabiei_all_dendogram"), ext=".pdf",
+             outdir = here::here("output/plots")), width = 8, height = 6.5)
+dend %>% plot
+colored_bars(colors = origin_bars, dend = dend, sort_by_labels_order = FALSE)
+dev.off()
+
+# define colour function for ComplexHeatmap
 # col_fun <- circlize::colorRamp2(0:3, paletteer_c("viridis::viridis", 4, direction = -1))
 # Heatmap(as.matrix(dist_matrix), name = "Genetic Distance", show_row_names = FALSE, show_column_names = FALSE, 
 #         col = col_fun)
@@ -196,7 +272,8 @@ dist_heatmap <- pheatmap(as.matrix(dist_matrix), show_rownames = FALSE, show_col
         # clustering_distance_rows = dist_matrix, clustering_distance_cols = dist_matrix,
          annotation_row = row_annotation, annotation_col = col_annotation, 
          cutree_rows = cluster_num, cutree_cols = cluster_num , 
-        filename = filedate(glue("A_rabiei_samples_heatmap_{cluster_num}clusters"), ext=".pdf", outdir = here::here("output/plots")), width = 8, height = 6.5)
+        filename = filedate(glue("A_rabiei_samples_heatmap_{cluster_num}clusters"), ext=".pdf", 
+                            outdir = here::here("output/plots")), width = 8, height = 6.5)
 
 # calculate "enrichment" in clusters
 high_path_thresh <- 3
@@ -208,18 +285,22 @@ pathog_cluster <- glsub@strata  %>% select(id, Path_rating) %>%
 glsub@other$ind.metrics
 
 # identify clusters on heatmap
-clust_annotation <- glsub@strata  %>% select(id, Patho.Group)  %>% inner_join(heatmap_clusters) %>% 
+clust_annotation <- glsub@strata  %>% select(id, State, Patho.Group, Haplotype)  %>% inner_join(heatmap_clusters) %>% 
   mutate(Cluster=factor(LETTERS[Cluster])) %>% column_to_rownames("id") 
+# check where ARH01 fits
+clust_annotation %>% filter(Haplotype=="ARH01") %>% count(Cluster)
 # define colours
 heatmap_pal <- my_colours
-heatmap_pal$Cluster <- levels(clust_annotation$Cluster) %>% setNames(as.character(paletteer_d("rcartocolor::Bold", length(.))), .) # "rcartocolor::Prism"
+heatmap_pal$Cluster <- levels(clust_annotation$Cluster) %>% setNames(as.character(paletteer_d("ggsci::default_uchicago", length(.))), .) # "rcartocolor::Prism" "rcartocolor::Bold"
 
 # palettes_d_names %>% filter(type=="qualitative", length>=6, length<10)
 
 pheatmap(as.matrix(dist_matrix), show_rownames = FALSE, show_colnames = FALSE, 
          color = paletteer_c("viridis::viridis", 50, direction = -1), annotation_colors = heatmap_pal,
          # clustering_distance_rows = dist_matrix, clustering_distance_cols = dist_matrix,
-         annotation_row = row_annotation, annotation_col = clust_annotation , 
+         # annotation_row = row_annotation, 
+         annotation_col = clust_annotation , 
+         treeheight_row = 0,
          cutree_rows = cluster_num, cutree_cols = cluster_num, 
          filename = filedate(glue("A_rabiei_samples_heatmap_{cluster_num}cluster_cols"), ext=".pdf",
          outdir = here("output/plots")),
@@ -245,22 +326,23 @@ prop_table %>% pivot_wider(names_from = pathog_class, values_from = Freq) %>%
 #   pivot_longer()
 # Cluster statistical analysis #####
 cluster_data <- pathog_cluster %>% mutate(Cluster=LETTERS[Cluster], Virulence=ifelse(Path_rating<high_path_thresh,0, 1)) %>% write_csv(here("data/cluster_data.csv"))
-data.glmer <- glmer(Virulence ~ Cluster + (1|id), family = binomial, data = cluster_data)
+data.glmer <- glmer(Virulence ~ Cluster + (1|id), family = binomial, data = cluster_data, nAGQ = 5)
 lsm <- lsmeans(data.glmer, "Cluster", type = "response")
 signif_lsm <- pairs(lsm) %>% as.data.frame() %>% mutate(stars=stars.pval(p.value)) %>% 
   write_xlsx(., here("output/A_rabiei_DArT_poppr.xlsx"), sheet = "pathogenicity_cluster_OR_stats", asTable=FALSE, overwritesheet = TRUE) #%>% filter(p.value<0.05) 
 lsm_mat <- matrix(NA, nrow = 6, ncol = 6,  dimnames = list(LETTERS[1:6], LETTERS[1:6])) 
 lsm_mat[lower.tri(lsm_mat)] <- signif_lsm$odds.ratio
 pairs(regrid(lsm)) %>% as.data.frame() %>% mutate(stars=stars.pval(p.value)) %>% 
-  write_xlsx(., "output/A_rabiei_DArT_poppr.xlsx", sheet = "pathogenicity_cluster_diff_stats", asTable=FALSE, overwritesheet = TRUE)
+  write_xlsx(., "output/A_rabiei_DArT_poppr.xlsx", sheet = "vir_cluster_diff_stats", asTable=FALSE, overwritesheet = TRUE)
 # plot 
-ggthemr("pale", text_size = 18)
+ggthemr::ggthemr("pale", text_size = 18)
 # Stacked bar plots, add, based on paired ddelta
 ggplot(prop_table, aes(x=Cluster, y=Freq, fill=pathog_class)) +
   geom_bar(stat="identity", width=0.6) +
   scale_fill_brewer(palette = "Set1", direction = -1) +
   labs(fill="Virulence\nClassification") +
-  annotate("text", x=levels(prop_table$Cluster), y = 1.05, label=c("ab", "ab", "c", "bc", "a", "ab"))
+  geom_text(data = prop_table %>% filter(pathog_class == "High"), aes(label=scales::percent(Freq, accuracy = 3)), nudge_y = -0.05, colour="white", size=5) +
+  annotate("text", x=levels(prop_table$Cluster), y = 1.05, label=c("ab", "ab", "c", "bc", "a", "ab"), size=5)
   # annotate("text", x=levels(prop_table$Cluster), y = 1.05, label=c("ab", "ab", "c\n***", "bc\n*", "a", "ab"))
 ggsave(here::here("output/plots/A_rabiei_cluster_path_classification_bar.pdf"), width = 7, height=5)
 
@@ -327,6 +409,7 @@ radiator::write_fineradstructure(tidy_gl$tidy.data, strata = glsub$strata %>% se
 
 
 
+glsub@pop <- glsub@strata$Origin
 
 # apply filters for analysis of Australian Samples
 # missing_thres <- 0.4
@@ -339,44 +422,71 @@ radiator::write_fineradstructure(tidy_gl$tidy.data, strata = glsub$strata %>% se
 # 
 # ploidy(gl_Aus) <- 1
 # gl_Aus@strata <- strata_factors %>% filter(id %in% indNames(gl_Aus)) %>% mutate_if(is.factor, ~fct_drop(.))
-# # Convert to allele frequencies (manage missing data)
-# X <- adegenet::tab(gl_Aus, freq = TRUE, NA.method = "mean")
-# pca1 <- ade4::dudi.pca(X, scale = FALSE, scannf = FALSE, nf=10)
-# 
-# pca_data <- pca1$li %>% rownames_to_column("id")  %>%
-#   left_join(strata_factors) 
-# # %>% mutate(Host=fct_relevel(fct_infreq(fct_lump_min(Host, min=6)), "Other", 
-# #                                                   after = Inf),
-# #                                  State=factor(State, levels = c("QLD", "NSW", "VIC", "SA", "WA", "SPAIN")))
-# # Calculate variance for each component (columns starting with 'C')
-# pca_var <- pca1$li %>% summarise_at(vars(starts_with("Axis")), var)
-# # Calculate the percentage of each component of the total variance
-# percentVar <- pca_var/sum(pca_var)
-# # Define colour palette, but get rid of the awful yellow - number 6
-# pal <- brewer.pal(9, "Set1")
-# pal2 <- brewer.pal(8, "Dark2")
-# text_cols <- adjustcolor( c("grey15", "dodgerblue3"), alpha.f = 0.8)
-# # seq_face <- setNames(c("bold", "plain"),unique(pca_data$Sequenced))
-# shapes <- c(21:25, 3)
-# # Isolate to annotate
-# outliers <- pca_data %>% filter(State=="Spain") 
-# 
-# #### PCA plot 1-2 geographic ####
-# # shape - Year, Seq.Provider, Host (State)
-# # Colors - Haplotype (qualitative), State (qualitative), Pathotype (diverging - RdYlGn)
-# # Size - Pathogenicity
-# # Create the plot for C1 and C2
-# ggplot(pca_data, aes(x=Axis1, y=Axis2, fill=State)) + 
-#   geom_point(alpha = 0.85, size=5, shape=21) +
-#   scale_fill_paletteer_d(ggsci, category10_d3 ) +
-#   plot_theme(baseSize = 20) + #  size="Year",
-#   labs( x=glue::glue("C1: {round(percentVar[1]*100,2)}% variance"),
-#         y=glue::glue("C2: {round(percentVar[2]*100,2)}% variance"))
-# # Save plot to a pdf file
-# ggsave(filedate(glue::glue("EDA_all_samples_PCA_state_PC1-2"),
-#                 ext = ".pdf", outdir = "output/plots",
-#                 dateformat = FALSE), width = 10, height=8)
+# Convert to allele frequencies (manage missing data)
+X <- adegenet::tab(glsub, freq = TRUE, NA.method = "mean")
+pca1 <- ade4::dudi.pca(X, scale = FALSE, scannf = FALSE, nf=20)
 
+pca_data <- pca1$li %>% rownames_to_column("id")  %>%
+  left_join(glsub_strata)
+# %>% mutate(Host=fct_relevel(fct_infreq(fct_lump_min(Host, min=6)), "Other",
+#                                                   after = Inf),
+#                                  State=factor(State, levels = c("QLD", "NSW", "VIC", "SA", "WA", "SPAIN")))
+# Calculate variance for each component (columns starting with 'C')
+pca_var <- pca1$li %>% summarise_at(vars(starts_with("Axis")), var)
+# Calculate the percentage of each component of the total variance
+percentVar <- pca_var/sum(pca_var)
+# Define colour palette, but get rid of the awful yellow - number 6
+pal <- brewer.pal(9, "Set1")
+pal2 <- brewer.pal(8, "Dark2")
+text_cols <- adjustcolor( c("grey15", "dodgerblue3"), alpha.f = 0.8)
+# seq_face <- setNames(c("bold", "plain"),unique(pca_data$Sequenced))
+shapes <- c(21:25, 3)
+# Isolate to annotate
+outliers <- pca_data %>% filter(Origin=="ICARDA")
+# 
+#### PCA plot 1-2 geographic ####
+# Create the plot for C1 and C2
+plot_comps <- 1:2
+plot_axes <- paste0("Axis", plot_comps)
+ggthemr("pale", text_size = 20)
+pca_12 <- ggplot(pca_data, aes(x=!!sym(plot_axes[1]), y=!!sym(plot_axes[2]), colour=Origin)) + # shape=State,
+  geom_point(alpha = 0.65, size=4) +
+  scale_colour_manual(values = my_colours$Origin) + 
+  # scale_fill_brewer(palette = "RdYlGn", direction = -1) +
+  # scale_fill_paletteer_d("RColorBrewer", "RdYlGn", direction = -1 ) + # ggsci, category10_d3
+  # scale_shape_manual(values = shapes) +
+  # scale_color_manual(values=seq_cols) +
+  # # scale_size_continuous(range = c(3,6)) +
+  # guides(shape = guide_legend(override.aes = list(size = 5 , fill=pal[2], color="grey15"), order = 1),  #, #
+  #        fill = guide_legend(override.aes = list(shape = 21))) +   #  guide_legend(override.aes = list(size = 5, pch=shapes[1]), order = 2)
+  # plot_theme(baseSize = 20) + #  size="Year",
+  labs( x=glue::glue("C{plot_comps[1]}: {round(percentVar[plot_comps[1]]*100,2)}% variance"),
+        y=glue::glue("C{plot_comps[2]}: {round(percentVar[plot_comps[2]]*100,2)}% variance"))
+# Save plot to a pdf file
+ggsave(filedate(glue::glue("All_samples_PCA_Origin_PC{paste(plot_comps, collapse='-')}"),
+                ext = ".pdf", outdir = here("output/plots")), width = 8, height=6)
+
+plot_comps <- 3:4
+plot_axes <- paste0("Axis", plot_comps)
+ggthemr("pale", text_size = 20)
+pca_34 <- ggplot(pca_data, aes(x=!!sym(plot_axes[1]), y=!!sym(plot_axes[2]), colour=Origin)) + # shape=State,
+  geom_point(alpha = 0.65, size=4) +
+  scale_colour_manual(values = my_colours$Origin) + 
+  # scale_fill_brewer(palette = "RdYlGn", direction = -1) +
+  # scale_fill_paletteer_d("RColorBrewer", "RdYlGn", direction = -1 ) + # ggsci, category10_d3
+  # scale_shape_manual(values = shapes) +
+  # scale_color_manual(values=seq_cols) +
+  # # scale_size_continuous(range = c(3,6)) +
+  # guides(shape = guide_legend(override.aes = list(size = 5 , fill=pal[2], color="grey15"), order = 1),  #, #
+  #        fill = guide_legend(override.aes = list(shape = 21))) +   #  guide_legend(override.aes = list(size = 5, pch=shapes[1]), order = 2)
+  # plot_theme(baseSize = 20) + #  size="Year",
+  labs( x=glue::glue("C{plot_comps[1]}: {round(percentVar[plot_comps[1]]*100,2)}% variance"),
+        y=glue::glue("C{plot_comps[2]}: {round(percentVar[plot_comps[2]]*100,2)}% variance"))
+
+cowplot::plot_grid(pca_12, pca_34, labels = c('A', 'B'), label_size = 22)
+# Save plot to a pdf file
+ggsave(filedate(glue::glue("All_samples_PCA_Origin_composite"),
+                ext = ".pdf", outdir = here("output/plots")), width = 14, height=6)
 
 #### Australian Pops Analysis ####
 # filter on missing data (will remove Spanish isolates)
@@ -389,7 +499,7 @@ radiator::write_fineradstructure(tidy_gl$tidy.data, strata = glsub$strata %>% se
 
 # Convert to allele frequencies (manage missing data)
 X <- adegenet::tab(glsub, freq = TRUE, NA.method = "mean")
-pca1 <- ade4::dudi.pca(X, scale = FALSE, scannf = FALSE, nf=10)
+pca1 <- ade4::dudi.pca(X, scale = FALSE, scannf = FALSE, nf=20)
 
 pca_data <- pca1$li %>% rownames_to_column("id")  %>%
   left_join(strata_factors)
@@ -418,22 +528,23 @@ shapes <- c(21:25)
 # Create the plot for C1 and C2
 plot_comps <- 1:2
 plot_axes <- paste0("Axis", plot_comps)
-ggplot(pca_data, aes(x=!!sym(plot_axes[1]), y=!!sym(plot_axes[2]), shape=State, fill=Patho.Group)) + 
-  geom_point(alpha = 0.85, size=5, color="grey15") +
-  scale_fill_manual(values = my_colours$Patho.Group) + 
+ggthemr("pale", text_size = 20)
+ggplot(pca_data, aes(x=!!sym(plot_axes[1]), y=!!sym(plot_axes[2]), colour=State)) + # shape=State,
+  geom_point(alpha = 0.65, size=4) +
+  scale_colour_manual(values = my_colours$State) + 
   # scale_fill_brewer(palette = "RdYlGn", direction = -1) +
   # scale_fill_paletteer_d("RColorBrewer", "RdYlGn", direction = -1 ) + # ggsci, category10_d3
-  scale_shape_manual(values = shapes) +
+  # scale_shape_manual(values = shapes) +
   # scale_color_manual(values=seq_cols) +
 # # scale_size_continuous(range = c(3,6)) +
-guides(shape = guide_legend(override.aes = list(size = 5 , fill=pal[2], color="grey15"), order = 1),  #, #
-       fill = guide_legend(override.aes = list(shape = 21))) +   #  guide_legend(override.aes = list(size = 5, pch=shapes[1]), order = 2)
-plot_theme(baseSize = 20) + #  size="Year",
+# guides(shape = guide_legend(override.aes = list(size = 5 , fill=pal[2], color="grey15"), order = 1),  #, #
+#        fill = guide_legend(override.aes = list(shape = 21))) +   #  guide_legend(override.aes = list(size = 5, pch=shapes[1]), order = 2)
+# plot_theme(baseSize = 20) + #  size="Year",
   labs( x=glue::glue("C{plot_comps[1]}: {round(percentVar[plot_comps[1]]*100,2)}% variance"),
         y=glue::glue("C{plot_comps[2]}: {round(percentVar[plot_comps[2]]*100,2)}% variance"))
 # Save plot to a pdf file
-ggsave(filedate(glue::glue("Aus_samples_PCA_state_patho_PC{paste(plot_comps, collapse='-')}"),
-                ext = ".pdf", outdir = here("output/plots")), width = 10, height=8)
+ggsave(filedate(glue::glue("Aus_samples_PCA_state_PC{paste(plot_comps, collapse='-')}"),
+                ext = ".pdf", outdir = here("output/plots")), width = 8, height=6)
 
 
 # Create the plot for C3 and C4
@@ -513,6 +624,121 @@ ggsave(filedate(glue::glue("Aus_samples_PCA_state_year_PC{paste(plot_comps, coll
 # glsub2@other$ind.metrics <- gl@other$ind.metrics[index.ind,] #not necessary
 # glsub2@other$loc.metrics <- gl@other$loc.metrics[index.loc,] #necessary
 
+
+#### DAPC analysis ####
+# adegenet::adegenetTutorial("dapc")
+# https://github.com/thibautjombart/adegenet/blob/master/tutorials/tutorial-dapc.pdf
+# https://grunwaldlab.github.io/Population_Genetics_in_R/DAPC.html
+Arab_genind <- gl2gi(glsub)
+ploidy(Arab_genind) <- 1
+Arab_genind@strata <- strata_factors %>% 
+  mutate(Origin=fct_recode(State, ICARDA = "SPAIN")) %>% 
+  filter(id %in% indNames(Arab_genind)) %>% mutate_if(is.factor, ~fct_drop(.))
+setPop(Arab_genind) <- ~ Origin
+poppr(Arab_genind)
+Arab_dapc <- dapc(Arab_genind, var.contrib = TRUE, scale = FALSE, n.pca = 20, n.da = nPop(Arab_genind) - 1)
+scatter(Arab_dapc, cell = 0, cstar = 0, mstree = TRUE, lwd = 2, lty = 2)
+# cross-validating the number of PCs to retain
+myInset <- function(dapc_obj, text_x=5, text_y=90, text_cex=0.85){
+  # dapc_obj=Year_dapc$DAPC
+  temp <- dapc_obj$pca.eig
+  temp <- 100* cumsum(temp)/sum(temp)
+  plot(temp, col=rep(c("black","lightgrey"),
+                     c(dapc_obj$n.pca,1000)), ylim=c(0,100),
+       xlab="PCA axis", ylab="Cumulated variance (%)",
+       cex=1, pch=20, type="h", lwd=2)
+  text(text_x, text_y,  sprintf("PCs=%s", dapc_obj$n.pca),
+       cex=text_cex, pos=4)
+}
+
+# now repeat 100 times
+# plot_dapc <- function(gen_obj, strata_var, plot_filename, plot_widt=8, plot_heig=7,
+#                       pal_pack="rcartocolor", pal="Bold",
+#                       pca_range=6:18, reps=500, shapes=15:19, label_groups=FALSE, leg_pos="topright",
+#                       pca_pos="bottomleft", ncores=parallel::detectCores()-1){
+#   # calculate optimal number of PCs to retain
+#   Arabx <- xvalDapc(tab(gen_obj, NA.method = "mean"), strata(gen_obj)[[strata_var]],
+#                         n.pca = pca_range, n.rep = reps,
+#                         parallel="snow", ncpus=ncores)
+# 
+#   # save plot
+#   pdf(file = plot_filename, width = plot_widt, height=plot_heig)
+#   scatter(Arabx$DAPC,  cex = 2, legend = TRUE, pch=shapes, 
+#           col = paletteer_d(!!pal_pack, !!pal), scree.da=FALSE, 
+#           clabel = label_groups, posi.leg = leg_pos, scree.pca = FALSE, 
+#           cleg = 0.75, xax = 1, yax = 2, inset.solid = 1)
+#   add.scatter(myInset(Arabx$DAPC), posi=pca_pos,
+#               inset=c(-0.03,-0.01), ratio=.25,
+#               bg=transp("white"))
+#   dev.off()
+#   return(invisible(Arabx))
+# }
+
+# set constants
+pca_range=6:18
+reps=1000
+shapes=c(15:18, 9,25)
+ncores=parallel::detectCores()-1
+# cross-validating the number of PCs to retain (rep=1000)
+# set consistent colours
+# 
+# favourite_pals <- setNames(c("awtools", "rcartocolor", "RColorBrewer", "ggsci"), 
+#                            c("mpalette", "Bold", "Set1", "category10_d3"))  
+# my_colours = list(
+#   State = levels(samples_strata$State) %>% setNames(as.character(paletteer_d("RColorBrewer::Set1", length(.))), .),
+#   Year = sort(unique(samples_strata$Year)) %>% setNames(as.character(paletteer_d("ggsci::default_uchicago", length(.))), .),
+#   Patho.Group = levels(samples_strata$Patho.Group) %>% 
+#     setNames(as.character(paletteer_d("RColorBrewer::RdYlGn", direction = -1))[round(seq(4,11, length.out = length(.)) ,0)], .),
+#   Host = levels(samples_strata$Host) %>% setNames(as.character(paletteer_d("RColorBrewer::Dark2", length(.))), .),
+#   GBS_cluster = levels(samples_strata$GBS_cluster) %>% 
+#     setNames(c(as.character(paletteer_d("rcartocolor::Bold", n=length(.)-1)), "grey1"), .)
+# )
+
+# Cluster by year
+# strata_var <- "Year"
+# cols <- my_colours[[strata_var]]
+# # pal <- "Set1"
+# Year_dapc <- xvalDapc(tab(genind_obj, NA.method = "mean"), strata(genind_obj)[[strata_var]],
+#                       n.pca = pca_range, n.rep = reps,
+#                       parallel="snow", ncpus=ncores)
+# 
+# # save plot
+# # pdf(file = filedate(sprintf("%s_DAPC_%s_analysis", variant_method,  strata_var), 
+# #                       ".pdf", outdir = glue("{analysis_outdir}/plots")), width = 7, height=6)
+# scatter(Year_dapc$DAPC,  cex = 2, legend = TRUE, pch=shapes, 
+#         col = my_colours[[strata_var]], scree.da=FALSE, # paletteer_d(!!favourite_pals[[pal]], !!pal)
+#         clabel = FALSE, posi.leg = "topright", scree.pca = FALSE, 
+#         cleg = 0.85, xax = 1, yax = 2, inset.solid = 1)
+# add.scatter(myInset(Year_dapc$DAPC), posi="bottomleft",
+#             inset=c(0.01,-0.01), ratio=.2,
+#             bg=transp("white"))
+# # dev.off()
+# 
+# # find unique alleles contributing to the variance of the year
+# contrib <- loadingplot(Year_dapc$DAPC$var.contr, axis=2,
+#                        thres=.005, lab.jitter=10)
+# contrib$var.names # marker names above the threshold
+
+# cluster by state
+strata_var <- "Origin"
+# pal <- "Bold"
+state_dapc <- xvalDapc(tab(Arab_genind, NA.method = "mean"), Arab_genind@strata[[strata_var]],
+                       n.pca = pca_range, n.rep = reps,
+                       parallel="snow", ncpus=ncores)
+
+# save plot
+pdf(file = filedate(sprintf("DArT_DAPC_%s_analysis", strata_var), 
+                    ".pdf", outdir = "output/plots"), width = 7, height=6)
+scatter(state_dapc$DAPC,  cex = 2, legend = TRUE, pch=shapes, 
+        col = my_colours[[strata_var]], scree.da=FALSE, 
+        clabel = FALSE, posi.leg = "topright", scree.pca = FALSE, 
+        cleg = 0.85, xax = 1, yax = 2, inset.solid = 1)
+add.scatter(myInset(state_dapc$DAPC), posi="bottomleft",
+            inset=c(0.01,-0.01), ratio=.2,
+            bg=transp("white"))
+
+dev.off()
+
 #### Population Analysis ####
 ##### Assume one big population #####
 
@@ -526,7 +752,7 @@ ggsave(filedate(glue::glue("Aus_samples_PCA_state_year_PC{paste(plot_comps, coll
 #     mutate_at(vars(Year, Host, Haplotype, Pathotype, Region), ~fct_explicit_na(., na_level = "Unknown"))
 # glsub@strata <- metadata %>% filter(indNames %in% indNames(glsub)) %>% select(Location, State, Region, Year, Host, Pathotype, Path_rating, Haplotype)
 gl_Aus <- glsub
-setPop(gl_Aus) <- ~State
+setPop(gl_Aus) <- ~Origin
 
 #### poppr diversity analysis #####
 # convert to genclone object
@@ -546,28 +772,39 @@ Arab_dist <- bitwise.dist(Arab_gclone, mat=TRUE, euclidean = TRUE, percent = FAL
 # xdist <- dist(genind2df(Arab_gclone, usepop = FALSE))
 mlg.filter(Arab_gclone, distance = bitwise.dist, percent = FALSE, algorithm = alg_choice) <- thresh_predict[[alg_choice]]
 
-# plot shared MLGs
+# plot shared MLGs ####
 # splitStrata(monpop) <- ~Tree/Year/Symptom
+mlg.table(Arab_gclone, strata = ~State,  color = TRUE)
 Arab_tab <- mlg.table(Arab_gclone, strata = ~State, plot = FALSE) %>% as.data.frame() %>% rownames_to_column("State") %>% 
     pivot_longer(-1, names_to = "MLG", values_to = "Count") %>% filter(Count>0) %>% arrange(desc(Count))
+
+mlg.crosspop(Arab_gclone, strata = ~State, df=TRUE) %>% rename(State=Population)
 # select the top MLGs
 shared_MLGs <- Arab_tab %>% count(MLG) %>% arrange(desc(n)) %>% filter(n>1)
 MLGs_ordered <- Arab_tab %>% filter(MLG %in% shared_MLGs$MLG) %>% group_by(MLG) %>% summarise(Total=sum(Count)) %>% 
   arrange(desc(Total))
+Arab_tab %>% filter(MLG==MLGs_ordered$MLG[1]) %>% mutate(Prop=Count/sum(Count))
 # plot MLGs shared by states
 plot_mlgs <- Arab_tab %>% filter(MLG %in% MLGs_ordered$MLG) %>% 
   mutate(State=factor(State, levels=levels(Arab_gclone@strata$State)), MLG=factor(MLG, levels = MLGs_ordered$MLG))
+
 ggplot(plot_mlgs, aes(x=MLG, y=Count, fill=State)) + 
   geom_bar(stat = "identity", width=0.75) + coord_flip() +
-  scale_fill_manual(values = my_colours$State)
+  scale_fill_manual(values = my_colours$State) +
+  #theme_Publication(20)
+  # plot_theme("classic", 18)
 # save plot
-ggsave("output/plots/A_rabiei_poppr_shared_MLG.pdf", width = 7, height=5)
-MLG_isolate_map <- Arab_gclone@strata %>% bind_cols(Arab_gclone@mlg@mlg) %>% select(id, State, MLG=contracted)
+ggsave("output/plots/A_rabiei_poppr_shared_MLG_pale.pdf", width = 7, height=5)
+MLG_isolate_map <- Arab_gclone@strata %>% bind_cols(Arab_gclone@mlg@mlg) %>% select(id, Location, State,Year, Host, MLG=contracted) %>% 
+  left_join(clust_annotation %>% rownames_to_column("id")) %>% 
+  write_xlsx(., "output/A_rabiei_DArT_poppr.xlsx", sheet = "isolate_annot", overwritesheet = TRUE)
+# check composition of the most common MLG
+
 MLG_isolate_map %>% group_by(MLG) %>% count(State) %>% arrange(desc(n))
 Arab_gclone@mlg@mlg %>% count(contracted) %>% arrange(desc(n)) %>% filter(n>1)
 
 # Generate population genetics metrices
-region_pop_gen <- poppr(Arab_gclone) %>% mutate(lambda_corr=N/(N - 1) * lambda, CF=MLG/N)  %>% 
+region_pop_gen <- poppr(Arab_gclone) %>% mutate(lambda_corr=N/(N - 1) * lambda, CF=(1-MLG/N))  %>% 
   write_xlsx(., "./output/A_rabiei_DArT_poppr.xlsx", "years_by_region", asTable = FALSE, overwritesheet = TRUE)
 pdf("./output/plots/A_rabiei_DArT_poppr_rare_state.pdf", width = 8, height = 6) 
 region_rare <- diversity_ci(Arab_gclone, n=100, rarefy = TRUE, raw=FALSE) %>% 
@@ -604,14 +841,14 @@ Arab_gclone@pop <- Arab_gclone$strata$State
 # setPop(Arab_gclone) <- ~Region
 set.seed(120)
 mdist <- bitwise.dist(Arab_gclone, mat=TRUE, euclidean = FALSE, percent = FALSE)
-pdf(filedate("Arab_regions_msn_all_hosts", ".pdf", here("output/plots")), width = 10, height = 7)
+pdf(filedate("Arab_Origin_msn", ".pdf", here("output/plots")), width = 10, height = 7)
 pe_data.msn <- poppr.msn(Arab_gclone, mdist, showplot = TRUE, threshold = thresh_predict[[alg_choice]],
-                         palette = my_colours$State, vertex.label = NA, margin=rep(-0.1,4), wscale = FALSE)
+                         palette = my_colours$Origin, vertex.label = NA, margin=rep(-0.1,4), wscale = FALSE)
 dev.off()
 # Visualize the network
 set.seed(120)
-pdf(filedate("Arab_regions_msn_all_hosts2", ".pdf", here("output/plots")), width = 10, height = 7)
-plot_poppr_msn(Arab_gclone, pe_data.msn,  palette = my_colours$State,  nodescale = 15, inds = "none",
+pdf(filedate("Arab_origins_msn_2", ".pdf", here("output/plots")), width = 10, height = 7)
+plot_poppr_msn(Arab_gclone, pe_data.msn,  palette = my_colours$Origin,  nodescale = 15, inds = "none",
                margin=rep(0,4))#, nodebase = 1.25) #  
 dev.off()
 
@@ -632,14 +869,34 @@ save.image(filedate("A_rabiei_DArT", ".RData"))
 
 # Compare MLG, cluster and WGS analysis ####
 
-mlg_clusters <- cbind(clust_annotation ,MLG=mlg.vector(Arab_gclone), Ind=indNames(Arab_gclone)) %>% 
+mlg_clusters <- cbind(clust_annotation ,MLG=mlg.vector(Arab_gclone), 
+                      Ind=indNames(Arab_gclone)) %>% 
   arrange(MLG) %>% 
-  write_xlsx(., "./output/A_rabiei_DArT_poppr.xlsx", "MLG_Cluster_table", asTable = FALSE, 
+  write_xlsx(., "./output/A_rabiei_DArT_poppr.xlsx", "MLG_Cluster_table", 
+             asTable = FALSE, 
              overwritesheet = TRUE)
 clusters_in_MLG <- mlg_clusters %>% group_by(MLG) %>% 
   summarise(cluster_num=length(unique(Cluster_fact ))) %>%
   arrange(desc(cluster_num))
-mismatch_rate <- nrow(clusters_in_MLG %>% filter(cluster_num>1))/nrow(clusters_in_MLG)
+multicluster_MLG <- clusters_in_MLG %>% filter(cluster_num>1)
+MLG_cluster_mismatch_rate <- nrow(clusters_in_MLG %>% filter(cluster_num>1))/nrow(clusters_in_MLG)
+inner_join(mlg_clusters, multicluster_MLG) %>% count(State)
+
+haplotypes_in_MLG <- mlg_clusters %>% filter(Haplotype!="Unknown") %>% 
+  group_by(MLG) %>% 
+  summarise(haplotypes=length(unique(Haplotype ))) %>%
+  arrange(desc(haplotypes))
+mismatch_rate <- nrow(haplotypes_in_MLG %>% filter(haplotypes>1))/nrow(haplotypes_in_MLG)
+# ARH01 MLG composition
+MLG_in_haplotypes <- mlg_clusters %>% filter(Haplotype!="Unknown") %>% 
+  group_by(Haplotype) %>% 
+  summarise(MLGs=length(unique(MLG ))) %>%
+  arrange(desc(haplotypes))
+mlg_clusters %>% filter(Haplotype=="ARH01") %>% count(MLG)
+
+
+# stacked bar graph
+
 
 wgs_inds <- readxl::read_excel(here("Sophie_A_rabiei_WGS/A_rabiei_WGS_analysis/sample_info/A_rabiei_isolate_list_for_wgs.xlsx")) %>% select(Isolate) %>% left_join(., mlg_clusters,  by=c("Isolate"="Ind") ) %>% 
   arrange(Cluster)

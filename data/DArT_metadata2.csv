@@ -1,0 +1,282 @@
+id,Location,State,Region,Year,Host,Pathotype,Path_rating,Haplotype
+122/17-1,Wasleys,SA,Reg6,2017,Genesis090,Group0,0,NA
+122/17-2,Wasleys,SA,Reg6,2017,Genesis090,Group0,0,ARH01
+122/17-3,Wasleys,SA,Reg6,2017,Genesis090,Group0,0,ARH01
+13MAR002,Marnoo,VIC,Reg5,2013,Slasher,Group0,0,NA
+13MUR002,Murtoa,VIC,Reg5,2013,Slasher,Group2,2,ARH01
+13RUP002,Rupanyup,VIC,Reg5,2013,Genesis090,Group2,2,NA
+14DON001,Donald,VIC,Reg5,2014,Slasher,Group0,0,ARH01
+14DON002,Donald,VIC,Reg5,2014,Slasher,Group0,0,ARH03
+14DON003,Donald,VIC,Reg5,2014,Slasher,Group1,1,ARH01
+14DON004,Donald,VIC,Reg5,2014,Slasher,Group1,1,ARH08
+14HOR014,Horsham,VIC,Reg5,2014,Genesis425,Group0,0,ARH01
+14HOR016,Horsham,VIC,Reg5,2014,Genesis425,Group0,0,ARH01
+14HOR017,Horsham,VIC,Reg5,2014,Genesis425,Group1,1,ARH01
+14HOR15,Horsham,VIC,Reg5,2014,Genesis425,Group0,0,ARH01
+158-1/18,Freeling,SA,NA,2018,Genesis090,Group3,3,NA
+158-2/18,Freeling,SA,NA,2018,Genesis090,Group4,4,NA
+15CUR002,Curyo,VIC,Reg5,2015,Genesis090,Group4,4,ARH02
+15CUR003,Curyo,VIC,Reg5,2015,Genesis090,Group1,1,ARH20
+15CUR004,Curyo,VIC,Reg5,2015,Genesis090,Group1,1,ARH20
+15DON006,Donald,VIC,Reg5,2015,Slasher,Group1,1,ARH05
+15DON008,Donald,VIC,Reg5,2015,Slasher,Group4,4,ARH05
+15DON009,Donald,VIC,Reg5,2015,Slasher,Group4,4,ARH01
+15DON010,Donald,VIC,Reg5,2015,Slasher,Group4,4,ARH01
+16RUP002,Rupanyup,VIC,Reg5,2016,Genesis090,Group0,0,ARH09
+16RUP012,Rupanyup,VIC,Reg5,2016,Genesis090,Group1,1,ARH01
+16RUP013,Rupanyup,VIC,Reg5,2016,Genesis090,Group1,1,ARH01
+16RUP014,Rupanyup,VIC,Reg5,2016,Genesis090,Group2,2,ARH01
+17CUR001,Curyo,VIC,Reg5,2017,Genesis090,Group0,0,ARH01
+17CUR002,Curyo,VIC,Reg5,2017,Genesis090,Group0,0,ARH09
+17CUR005,Curyo,VIC,Reg5,2017,Genesis090,Group5,5,ARH01
+17CUR007,Curyo,VIC,Reg5,2017,Genesis090,Group3,3,ARH01
+17CUR009,Curyo,VIC,Reg5,2017,Genesis090,Group1,1,ARH01
+17CUR013,Curyo,VIC,Reg5,2017,Genesis090,Group0,0,ARH09
+17HOR001,Horsham,VIC,Reg5,2017,Genesis090,Group0,0,NA
+17HOR009,Horsham,VIC,Reg5,2017,Genesis090,Group0,0,NA
+18BRK1-1-01,Bruce Rock,WA,NA,2018,Striker,Group1,1,NA
+18BRK1-1-02,Bruce Rock,WA,NA,2018,Striker,Group0,0,NA
+18BRK1-1-03,Bruce Rock,WA,NA,2018,Striker,Group0,0,NA
+18BRK1-3-01,Bruce Rock,WA,NA,2018,Striker,Group3,3,NA
+18BRK1-3-02,Bruce Rock,WA,NA,2018,Striker,Group0,0,NA
+18BRK1-3-03,Bruce Rock,WA,NA,2018,Striker,Group0,0,NA
+18BRK2-1-01,Bruce Rock,WA,NA,2018,Slasher,Group0,0,NA
+18MGW1-4-01,Mingenew NVT,WA,NA,2018,Maiden,Group2,2,NA
+18MGW1-5-01,Mingenew NVT,WA,NA,2018,Maiden,Group0,0,NA
+18MGW1-6-01,Mingenew NVT,WA,NA,2018,Maiden,Group0,0,NA
+18MGW1-8-01,Mingenew NVT,WA,NA,2018,Slasher,Group0,0,NA
+18MGW1-8-02,Mingenew NVT,WA,NA,2018,Slasher,Group0,0,NA
+18MGW1-9-01,Mingenew NVT,WA,NA,2018,CICA1521,Group0,0,NA
+18MLW1-2-01,Mullewa NVT,WA,NA,2018,Maiden,Group0,0,NA
+18MLW1-2-02,Mullewa NVT,WA,NA,2018,Maiden,Group2,2,NA
+18MLW1-2-03,Mullewa NVT,WA,NA,2018,Maiden,Group4,4,NA
+18NBN2-1-01,Narembeen,WA,NA,2018,Slasher,Group0,0,NA
+18NBN2-1-02,Narembeen,WA,NA,2018,Slasher,Group0,0,NA
+18NBN2-1-03,Narembeen,WA,NA,2018,Slasher,Group0,0,NA
+18NBN2-1-05,Narembeen,WA,NA,2018,Slasher,Group0,0,NA
+18TSP1-1-01,Three Springs NVT,WA,NA,2018,Ambar,Group1,1,NA
+18TSP1-1-02,Three Springs NVT,WA,NA,2018,Ambar,Group1,1,NA
+18TSP1-3-01,Three Springs NVT,WA,NA,2018,Ambar,Group0,0,NA
+18TSP1-4-02,Three Springs NVT,WA,NA,2018,Ambar,Group2,2,NA
+83-1/18,Kulpara,SA,NA,2018,Genesis090,Group2,2,NA
+83-2/18,Kulpara,SA,NA,2018,Genesis090,Group2,2,NA
+A.r SpainP2,Spain,SPAIN,NA,NA,NA,NA,NA,NA
+A.r SpainP4,Spain,SPAIN,NA,NA,NA,NA,NA,NA
+A17061,"Curyo, VIC",VIC,Reg5,2017,GenesisKalkee,Group0,0,ARH01
+A17062,"Curyo, VIC",VIC,Reg5,2017,CICA1751,Group0,0,ARH01
+A17066,"Curyo, VIC",VIC,Reg5,2017,CICA1551,Group2,2,ARH73
+A17069,"Curyo, VIC",VIC,Reg5,2017,CICA1552,Group0,0,ARH01
+ARD-16-650,Ardath,WA,Reg7,2016,Striker,Group0,0,NA
+ARD-16-651,Ardath,WA,Reg7,2016,Striker,Group0,0,ARH01
+ARD-16-655,Ardath,WA,Reg7,2016,Striker,Group0,0,ARH01
+ARD-16-657,Ardath,WA,Reg7,2016,Striker,Group0,0,NA
+ARD-16-658,Ardath,WA,Reg7,2016,Striker,Group0,0,ARH01
+AS17083,WRS Paddock 4,VIC,NA,2018,Striker,Group4,4,NA
+AS17087,Curyo SPA,VIC,NA,2018,Genesis090,Group4,4,NA
+AS18079,WRS Bay H,VIC,NA,2018,Striker,Group4,4,NA
+AS18080,WRS Bay H,VIC,NA,2018,Genesis090,Group0,0,NA
+AS18082,WRS Paddock 4,VIC,NA,2018,Genesis090,Group2,2,NA
+AS18084,WRS Paddock 5,VIC,NA,2018,Monarch,Group2,2,NA
+AS18086,Curyo SPA,VIC,NA,2018,Striker,Group1,1,NA
+AS18092,Birchip NVT,VIC,NA,2018,Monarch,Group4,4,NA
+AS18098,Birchip NVT,VIC,NA,2018,Striker,Group4,4,NA
+AS18105,Taranyurk NVT,VIC,NA,2018,Striker,Group0,0,NA
+AS18115,Telangatuk SPA,VIC,NA,2018,Genesis090,Group0,0,NA
+AS18116,Kaniva NVT,VIC,NA,2018,Monarch,Group3,3,NA
+AS18128,Horsham SPA,VIC,NA,2018,Genesis090,Group3,3,NA
+AS18163,Wimmera Survey Paddock 20,VIC,NA,2018,Genesis090,Group0,0,NA
+AS18165,Wimmera Survey Paddock 8,VIC,NA,2018,Genesis090,Group3,3,NA
+AS18166,Mallee Survey Paddock 17,VIC,NA,2018,Genesis090,Group3,3,NA
+AS18167,Mallee Survey Paddock 14,VIC,NA,2018,Genesis090,Group4,4,NA
+AS18168,Mallee Survey Paddock 10,VIC,NA,2018,Genesis090,Group1,1,NA
+AS18169,Mallee Survey Paddock 9,VIC,NA,2018,Genesis090,Group2,2,NA
+AS18170,Mallee Survey Paddock 15,VIC,NA,2018,Genesis090,Group3,3,NA
+DON-16-629,Dongara,WA,Reg7,2016,Kalkee,Group0,0,NA
+DON-16-638,Dongara,WA,Reg7,2016,Kalkee,Group0,0,ARH11
+DON-16-643,Dongara,WA,Reg7,2016,Kalkee,Group0,0,ARH23
+F14038,Salter Springs,SA,Reg6,2014,Monarch,Group0,0,ARH01
+F14039,Salter Springs,SA,Reg6,2014,Monarch,Group0,0,ARH01
+F14040,Salter Springs,SA,Reg6,2014,Monarch,Group0,0,ARH01
+F14090,Riverton,SA,Reg6,2014,Kalkee,Group0,0,ARH01
+F15009,Coonalpyn,SA,Reg6,2015,Striker,Group0,0,ARH01
+F15019,Crystal Brook,SA,Reg6,2015,Slasher,Group1,1,ARH01
+F15021,Crystal Brook,SA,Reg6,2015,Slasher,Group1,1,ARH01
+F16083-1,Moonta,SA,Reg6,2016,Genesis090,Group3,3,ARH01
+F16084-1,Kadina,SA,Reg6,2016,Genesis090,Group4,4,ARH01
+F16149-1,Condowie,SA,Reg6,2016,Genesis090,Group4,4,ARH01
+F16152-1,Nuriootpa,SA,Reg6,2016,Genesis090,Group0,0,ARH10
+F16156-1,Berriwillock,SA,Reg6,2016,Genesis090,Group0,0,ARH01
+F16165-1,Grace Plains,SA,Reg6,2016,Genesis079,Group4,4,ARH01
+F16181-1,Melton,SA,Reg6,2016,Genesis090,Group0,0,NA
+F16186-1,Boort,VIC,Reg5,2016,Genesis090,NA,NA,NA
+F16188-1,Melton,SA,Reg6,2016,Genesis079,Group0,0,NA
+F16207-1,Pt Broughton,SA,Reg6,2016,Genesis090,Group4,4,ARH01
+F16253-1,Pt Broughton,SA,Reg6,2016,Genesis090,Group3,3,ARH01
+F16256-1,Daveyston,SA,Reg6,2016,Genesis090,Group0,0,ARH01
+F16313-1,Coonalpyn,SA,Reg6,2016,Genesis090,Group3,3,ARH01
+F17067-1,Coonalpyn,SA,Reg6,2017,Genesis090,Group0,0,ARH01
+F17076-1,Finley,NSW,Reg4,2017,Genesis090,Group4,4,ARH01
+F17077-1,Bute,SA,Reg6,2017,Genesis090,Group2,2,NA
+F17081-1,Wasleys,SA,Reg6,2017,Genesis090,Group1,1,ARH01
+F17165-1,Blyth,SA,Reg6,2017,Genesis090,Group3,3,ARH01
+F17175-1,Elmore,VIC,Reg5,2017,Genesis090,Group0,0,ARH01
+F17175-2,Elmore,VIC,Reg5,2017,Genesis090,NA,NA,NA
+F17175-3,Elmore,VIC,Reg5,2017,Genesis090,NA,NA,NA
+F17191-1,Pt Broughton,SA,Reg6,2017,Genesis090,Group5,5,ARH01
+F17191-2,Pt Broughton,SA,Reg6,2017,Genesis090,Group5,5,ARH01
+F17191-3,Pt Broughton,SA,Reg6,2017,Genesis090,Group5,5,NA
+F17200-1,Balaklava,SA,Reg6,2017,Sonali,Group0,0,ARH01
+F17200-2,Balaklava,SA,Reg6,2017,Sonali,Group3,3,ARH01
+F17200-3,Balaklava,SA,Reg6,2017,Sonali,Group3,3,ARH01
+F17201-1,Balaklava,SA,Reg6,2017,Sonali,Group0,0,ARH01
+F18090-1,Port Broughton,SA,NA,2018,Genesis090,Group2,2,NA
+F18090-2,Port Broughton,SA,NA,2018,Genesis090,Group2,2,NA
+F18093-1,Wandeavah,SA,NA,2018,Genesis090,Group0,0,NA
+F18093-2,Wandeavah,SA,NA,2018,Genesis090,Group0,0,NA
+F18096-1,Hart,SA,NA,2018,Genesis090,Group3,3,NA
+F18096-2,Hart,SA,NA,2018,Genesis090,Group3,3,NA
+F18112-1,Snowtown,SA,NA,2018,Genesis090,Group3,3,NA
+F18112-2,Snowtown,SA,NA,2018,Genesis090,Group4,4,NA
+F18113-1,Port Broughton,SA,NA,2018,Genesis090,Group0,0,NA
+F18113-2,Port Broughton,SA,NA,2018,Genesis090,Group0,0,NA
+F18116-1,Port Broughton,SA,NA,2018,Genesis090,Group3,3,NA
+F18116-2,Port Broughton,SA,NA,2018,Genesis090,Group3,3,NA
+F18126-1,Maitland,SA,NA,2018,Genesis090,Group4,4,NA
+F18126-2,Maitland,SA,NA,2018,Genesis090,Group3,3,NA
+F18149-1,Paskeville,SA,NA,2018,Genesis090,Group3,3,NA
+F18150-1,Paskeville,SA,NA,2018,Genesis090,Group3,3,NA
+F18151-1,Paskeville,SA,NA,2018,Genesis090,Group3,3,NA
+F18165-1,Kilkerrin YP,SA,NA,2018,Genesis090,Group4,4,NA
+F18165-2,Kilkerrin YP,SA,NA,2018,Genesis090,Group4,4,NA
+F18166-1,Balaklava,SA,NA,2018,Genesis090,Group3,3,NA
+FT13092-1,Kingsford,SA,Reg6,2013,Genesis090,Group4,4,ARH11
+FT13092-2,Kingsford,SA,Reg6,2013,Genesis090,Group4,4,ARH04
+FT13092-3,Kingsford,SA,Reg6,2013,Genesis090,Group1,1,NA
+FT13092-5,Kingsford,SA,Reg6,2013,Genesis090,Group1,1,ARH01
+FT13093-1,Kingsford,SA,Reg6,2013,Genesis090,Group1,1,ARH01
+FT13093-2,Kingsford,SA,Reg6,2013,Genesis090,Group1,1,NA
+FT13093-3,Kingsford,SA,Reg6,2013,Genesis090,Group1,1,NA
+FT13093-6,Kingsford,SA,Reg6,2013,Genesis090,Group0,0,NA
+FT13095-1,Kingsford,SA,Reg6,2013,CICA1152,Group0,0,ARH09
+FT13095-2,Kingsford,SA,Reg6,2013,CICA1152,Group0,0,ARH01
+FT13095-3,Kingsford,SA,Reg6,2013,CICA1152,Group0,0,NA
+FT13095-4,Kingsford,SA,Reg6,2013,CICA1152,Group0,0,ARH01
+FT13095-5,Kingsford,SA,Reg6,2013,CICA1152,Group0,0,ARH01
+FT13095-6,Kingsford,SA,Reg6,2013,CICA1152,Group0,0,ARH01
+FT13096-1,Kingsford,SA,Reg6,2013,CICA1152,Group0,0,ARH31
+FT13096-2,Kingsford,SA,Reg6,2013,CICA1152,Group0,0,NA
+FT13096-3,Kingsford,SA,Reg6,2013,CICA1152,Group0,0,NA
+FT13096-4,Kingsford,SA,Reg6,2013,CICA1152,Group0,0,NA
+FT13096-5,Kingsford,SA,Reg6,2013,CICA1152,Group0,0,ARH01
+FT13097-1,Kingsford,SA,Reg6,2013,CICA1152,Group0,0,ARH01
+FT13097-2,Kingsford,SA,Reg6,2013,CICA1152,Group0,0,ARH05
+FT13097-3,Kingsford,SA,Reg6,2013,CICA1152,Group0,0,ARH03
+FT13097-4,Kingsford,SA,Reg6,2013,CICA1152,Group0,0,ARH01
+FT15001,Weetulta,SA,Reg6,2015,Genesis090,Group1,1,ARH01
+FT15024,Moonta,SA,Reg6,2015,Genesis090,Group4,4,ARH01
+FT15025,Moonta,SA,Reg6,2015,Genesis090,Group2,2,ARH01
+FT15026,Moonta,SA,Reg6,2015,Genesis090,Group4,4,ARH01
+FT15028,Weetulta,SA,Reg6,2015,Genesis090,Group3,3,ARH04
+FT15029,Weetulta,SA,Reg6,2015,Genesis090,Group3,3,ARH01
+MER-17-373,Merredin,WA,Reg7,2017,Striker,Group0,0,NA
+MER-17-374,Merredin,WA,Reg7,2017,Striker,Group1,1,ARH01
+MER-17-376,Merredin,WA,Reg7,2017,Striker,Group1,1,ARH03
+MER-17-378,Merredin,WA,Reg7,2017,Striker,Group3,3,ARH03
+MER-17-379,Merredin,WA,Reg7,2017,Striker,Group0,0,NA
+MER-17-380,Merredin,WA,Reg7,2017,Striker,Group2,2,ARH01
+MER-17-381,Merredin,WA,Reg7,2017,Striker,Group0,0,NA
+MER-17-382,Merredin,WA,Reg7,2017,Striker,Group0,0,NA
+MGW-16-644,Mingenew,WA,Reg7,2016,Genesis836,Group0,0,NA
+MGW-16-645,Mingenew,WA,Reg7,2016,Genesis836,Group0,0,NA
+MGW-16-646,Mingenew,WA,Reg7,2016,Genesis836,Group0,0,ARH01
+MGW-16-647,Mingenew,WA,Reg7,2016,Genesis836,Group0,0,NA
+MGW-16-648,Mingenew,WA,Reg7,2016,Genesis836,Group0,0,ARH23
+MIL17253,Mullewa,WA,Reg7,2017,Neelam,Group3,3,NA
+MIL17257,Mullewa,WA,Reg7,2017,Neelam,Group0,0,NA
+MIL17259,Mullewa,WA,Reg7,2017,Neelam,Group3,3,NA
+TR10329,Westmar,QLD,NA,2018,HatTrick,Group1,1,NA
+TR10337,"GRDC Farm, Tosari, Pampas Kalyx trial site",NSW,NA,2018,Kyabra,Group0,0,NA
+TR10340,"GRDC Farm, Tosari, Pampas Kalyx trial site",NSW,NA,2018,Kyabra,Group0,0,NA
+TR10345,"GRDC Farm, Tosari, Pampas Kalyx trial site",NSW,NA,2018,Kyabra,Group0,0,NA
+TR10347,"GRDC Farm, Tosari, Pampas Kalyx trial site",NSW,NA,2018,Kyabra,Group0,0,NA
+TR10348,"GRDC Farm, Tosari, Pampas Kalyx trial site",NSW,NA,2018,Kyabra,Group0,0,NA
+TR10350,"GRDC Farm, Tosari, Pampas Kalyx trial site",NSW,NA,2018,Kyabra,Group0,0,NA
+TR10421,"Llanver, pdk 17",NSW,NA,2018,HatTrick,Group1,1,NA
+TR10423,Merrigal,NSW,NA,2018,Almaz,Group0,0,NA
+TR10424,Merrigal,NSW,NA,2018,Almaz,Group0,0,NA
+TR10425,Merrigal,NSW,NA,2018,Almaz,Group0,0,NA
+TR10428,Merrigal,NSW,NA,2018,Almaz,Group1,1,NA
+TR10430,Merrigal,NSW,NA,2018,Almaz,Group0,0,NA
+TR10433,Merrigal,NSW,NA,2018,Almaz,Group0,0,NA
+TR10434,Merrigal,NSW,NA,2018,Almaz,Group0,0,NA
+TR10435,Merrigal,NSW,NA,2018,Almaz,Group0,0,NA
+TR10437,Merrigal,NSW,NA,2018,Almaz,Group0,0,NA
+TR6415,Yallaroi,NSW,Reg3,2014,HatTrick,Group4,4,ARH01
+TR6417,Yallaroi,NSW,Reg3,2014,HatTrick,Group4,4,ARH01
+TR6422,Yallaroi,NSW,Reg3,2014,HatTrick,Group1,1,ARH01
+TR6462,Gulargambone,NSW,Reg3,2014,HatTrick,Group0,0,NA
+TR6540,Tulloona,NSW,Reg2,2014,HatTrick,Group0,0,NA
+TR6545,Windridge,NSW,Reg1,2014,HatTrick,Group0,0,NA
+TR6546,Windridge,NSW,Reg1,2014,HatTrick,Group0,0,NA
+TR6601,Kindee,NSW,Reg3,2014,HatTrick,Group0,0,ARH01
+TR6602,Kindee,NSW,Reg3,2014,HatTrick,Group0,0,ARH01
+TR6620,Garah,NSW,Reg2,2014,HatTricK*,Group0,0,ARH01
+TR6690,Gilgandra,NSW,Reg3,2014,HatTrick,Group0,0,NA
+TR6692,Gilgandra,NSW,Reg3,2014,HatTrick,Group0,0,ARH25
+TR6694,Gilgandra,NSW,Reg3,2014,HatTrick,Group0,0,ARH52
+TR6704,Trangie,NSW,Reg2,2014,HatTrick,Group0,0,ARH01
+TR6706,Narromine,NSW,Reg3,2014,HatTrick,Group0,0,NA
+TR6709,Narromine,NSW,Reg3,2014,HatTrick,Group0,0,NA
+TR6710,Narromine,NSW,Reg2,2014,HatTrick,Group0,0,ARH15
+TR6747,Peak Hill,NSW,Reg3,2014,HatTrick,Group0,0,NA
+TR6749,Peak Hill,NSW,Reg3,2014,HatTrick,Group0,0,ARH01
+TR6750,Peak Hill,NSW,Reg3,2014,HatTrick,Group0,0,ARH09
+TR6795,Gulargambone,NSW,Reg3,2014,HatTrick,Group0,0,ARH07
+TR6796,Gulargambone,NSW,Reg3,2014,HatTrick,Group0,0,NA
+TR6800,Armatree,NSW,Reg2,2014,HatTrick,Group0,0,ARH46
+TR6802,Armatree,NSW,Reg2,2014,HatTrick,Group0,0,ARH01
+TR8105,Narromine,NSW,Reg4,2016,HatTrick,Group1,1,ARH01
+TR8334,Brookstead,QLD,Reg1,2016,HatTrick,Group0,0,ARH01
+TR8336,Brookstead,QLD,Reg1,2016,HatTrick,Group0,0,ARH01
+TR8383,Munwonga,NSW,Reg3,2016,HatTrick,Group1,1,NA
+TR8384,Munwonga,NSW,Reg3,2016,HatTrick,Group1,1,ARH01
+TR8387,Munwonga,NSW,Reg3,2016,HatTrick,Group0,0,ARH01
+TR8392,Garah,NSW,Reg2,2016,HatTrick,Group0,0,NA
+TR8653,"Merwood, Croppa Ck",QLD,Reg2,2016,Seamer,Group0,0,ARH01
+TR8655,"Merwood, Croppa Ck",QLD,Reg2,2016,Seamer,Group0,0,ARH01
+TR8657,"Merwood, Croppa Ck",QLD,Reg2,2016,Seamer,Group0,0,ARH09
+TR8744,Dalby,NSW,Reg1,2016,Seamer,Group1,1,ARH09
+TR8749,Dalby,NSW,Reg1,2016,Seamer,Group0,0,NA
+TR8750,Dalby,NSW,Reg1,2016,Seamer,Group0,0,ARH01
+TR9529,Chinchilla,QLD,Reg1,2017,Seamer,Group5,5,NA
+TR9530,"Dulacca, Chinchilla",QLD,Reg1,2017,Seamer,Group0,0,NA
+TR9531,"Dulacca, Chinchilla",QLD,Reg1,2017,Seamer,Group0,0,ARH01
+TR9532,Chinchilla,QLD,Reg1,2017,Seamer,Group3,3,NA
+TR9533,Chinchilla,QLD,Reg1,2017,Seamer,Group4,4,NA
+TR9534,Dalby,QLD,Reg1,2017,Seamer,Group0,0,NA
+TR9535,Gravel Pit Hill,QLD,Reg1,2017,Seamer,Group0,0,NA
+TR9536,Gravel Pit Hill,QLD,Reg1,2017,Seamer,Group5,5,NA
+TR9537,Gravel Pit Hill,QLD,Reg1,2017,Seamer,Group0,0,ARH01
+TR9538,Gravel Pit Hill,QLD,Reg1,2017,Seamer,Group0,0,NA
+TR9539,Fox Holes,QLD,Reg1,2017,Seamer,Group0,0,NA
+TR9540,Fox Holes,QLD,Reg1,2017,Seamer,Group0,0,NA
+TR9541,Fox Holes,QLD,Reg1,2017,Seamer,Group0,0,NA
+TR9542,Fox Holes,QLD,Reg1,2017,Seamer,Group0,0,NA
+TR9543,Fox Holes,QLD,Reg1,2017,Seamer,Group3,3,NA
+TR9544,Fox Holes,QLD,Reg1,2017,Seamer,Group0,0,NA
+TR9568,Gurley,NSW,Reg2,2017,Seamer,Group3,3,ARH09
+TR9571,Gurley,NSW,Reg2,2017,Seamer,Group5,5,ARH09
+TR9572,Gurley,NSW,Reg2,2017,Seamer,Group4,4,ARH01
+TR9573,Gurley,NSW,Reg2,2017,Seamer,Group5,5,ARH01
+TR9700,Walgett,NSW,Reg3,2017,HatTrick,Group0,0,ARH05
+TR9701,Walgett,NSW,Reg3,2017,HatTrick,Group0,0,ARH01
+TR9702,Walgett,NSW,Reg3,2017,Seamer,Group0,0,ARH01
+TR9703,Walgett,NSW,Reg3,2017,Seamer,Group0,0,ARH01
+TR9704,Walgett,NSW,Reg3,2017,Seamer,NA,NA,ARH01
+TR9706,Walgett,NSW,Reg3,2017,Seamer,Group0,0,ARH01
+TR9707,Walgett,NSW,Reg3,2017,Seamer,Group0,0,ARH01
+TR9708,Walgett,NSW,Reg3,2017,Seamer,Group5,5,ARH01
+TR9709,Walgett,NSW,Reg3,2017,Seamer,Group0,0,ARH03
+TR9710,Walgett,NSW,Reg3,2017,Seamer,Group4,4,ARH01
+TR9712,Walgett,NSW,Reg3,2017,Seamer,Group2,2,ARH01
+TR9713,Walgett,NSW,Reg3,2017,Seamer,Group3,3,ARH01
